@@ -1,0 +1,244 @@
+﻿using System.Reflection;
+using System.Text.RegularExpressions;
+using YamlDotNet.Serialization;
+using MDAT.Resolver;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Globalization;
+using Newtonsoft.Json;
+using Markdig;
+using Markdig.Syntax;
+using System.Reflection.Metadata;
+using Markdig.Parsers;
+using System.ComponentModel;
+using YamlDotNet.Core;
+using LoxSmoke.DocXml;
+using System.IO;
+
+namespace MDAT
+{
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
+    public class MarkdownTestAttribute : Attribute, ITestDataSource
+    {
+        private string _filePath;
+
+        public string ParsedPath { get; set; }
+
+        private Dictionary<int, string> displayNames = new Dictionary<int, string>();
+
+        public MarkdownTestAttribute(string filePath)
+        {
+            _filePath = filePath;
+            ParsedPath = _filePath;
+        }
+
+        public IEnumerable<object[]> GetData(MethodInfo testMethod)
+        {
+            if (testMethod == null) { throw new ArgumentNullException(nameof(testMethod)); }
+
+            _filePath = _filePath.Replace("{method}", testMethod.Name.Replace("_", "-").ToLower());
+            ParsedPath = _filePath.Replace("~\\", "..\\..\\..\\");
+
+            // Get the absolute path to the JSON file
+            ParsedPath = Path.IsPathRooted(ParsedPath)
+                    ? ParsedPath
+                    : Path.GetRelativePath(Directory.GetCurrentDirectory(), ParsedPath);
+
+            MethodComments? methodComments = null;
+
+            if (!File.Exists(ParsedPath))
+            {
+                var assembly = Assembly.GetCallingAssembly();
+                string directoryPath = GetDirectoryPath(assembly);
+                string xmlFilePath = Path.Combine(directoryPath, assembly.GetName().Name + ".xml");
+                if (File.Exists(xmlFilePath))
+                {
+                    DocXmlReader reader = new DocXmlReader(xmlFilePath);
+                    methodComments = reader.GetMethodComments(testMethod);
+                }
+
+                var code = "";
+
+                foreach (var item in testMethod.GetParameters())
+                {
+
+                    var paramsDetails = methodComments?.Parameters.Where(e => e.Name == item.Name).FirstOrDefault();
+
+                    var strDetails = paramsDetails is { } ? $"# {paramsDetails.Value.Text}\r\n" : "";
+
+                    code += $"{strDetails}{item.Name}:\r\n{DescribeTypeOfObject(item.ParameterType, "  ")}";
+                }
+
+                var summary = methodComments is { }
+                                && !string.IsNullOrWhiteSpace(methodComments.Summary)
+                                ? $"\r\n\r\n> {methodComments?.Summary.Replace(Environment.NewLine,"\\" + Environment.NewLine)}"
+                                : "";
+
+                File.WriteAllText(ParsedPath, $"# {testMethod.Name}{summary}\r\n\r\n## Case 1\r\n\r\nDescription\r\n\r\n``````yaml\r\n{code}``````");
+            }
+
+            // Load the file
+            var fileData = File.ReadAllText(ParsedPath);
+
+            var mdFile = Markdown.Parse(fileData);
+
+            string? lastHeading1 = null;
+            string? lastHeading2 = null;
+            string? lastHeading3 = null;
+
+            List<object[]> to = new List<object[]>();
+
+            foreach (var info in mdFile)
+            {
+                if (info is HeadingBlock add)
+                {
+                    if (add?.Level == 1)
+                    {
+                        lastHeading1 = add?.Inline?.FirstOrDefault()?.ToString();
+                        lastHeading2 = null;
+                        lastHeading3 = null;
+                    }
+                      
+
+                    if (add?.Level == 2)
+                    {
+                        lastHeading2 = add?.Inline?.FirstOrDefault()?.ToString();
+                        lastHeading3 = null;
+                    }
+
+                    if (add?.Level == 3)
+                        lastHeading3 = add?.Inline?.FirstOrDefault()?.ToString();
+
+                }
+                else if (info is FencedCodeBlock fbc && fbc.ClosingFencedCharCount == 6 &&
+                        (fbc.Info?.ToLower() == "yaml" || fbc.Info?.ToLower() == "yml"))
+                {
+                    IEnumerable<object[]> retour;
+
+                    var doc = string.Join("\r\n", fbc.Lines);
+
+                    if (string.IsNullOrWhiteSpace(doc)) continue;
+
+                    var resolver = new MDATYamlTypeResolver(testMethod);
+
+                    IDeserializer deserializer = NewDeserilizer(testMethod, resolver);
+
+                    object[]? values = null;
+
+                    try
+                    {
+                        var ggs = deserializer.Deserialize<Dictionary<string, object>>(doc);
+
+
+                        if (ggs is null) continue;
+                        values = ggs.Values.ToArray();
+
+                    }
+                    catch (YamlException ex)
+                    {
+                        var invalidName = testMethod.GetParameters()[resolver.Position - 1];
+                        throw new InternalTestFailureException($"Method '{testMethod.Name}' exception on '{invalidName.Name}' parameter.'\r\n{ex.Message}\r\n{ex.InnerException?.Message}", ex);
+                    }
+                    displayNames.Add(values.GetHashCode(), $"{(lastHeading1 is { } ? "_" + lastHeading1 : "")}{(lastHeading2 is { } ? "_" + lastHeading2 : "")}{(lastHeading3 is { } ? "_" + lastHeading3 : "")}");
+
+                    to.Add(values);
+                  
+                }
+
+            }
+
+            return to;
+        }
+
+
+        public static string GetDirectoryPath(Assembly assembly)
+        {
+            string codeBase = assembly.CodeBase;
+            UriBuilder uri = new UriBuilder(codeBase);
+            string path = Uri.UnescapeDataString(uri.Path);
+            return Path.GetDirectoryName(path);
+        }
+
+        /// <summary>
+        /// Create an object structure the code can recursively describe
+        /// </summary>
+        public class Root
+        {
+            public string Name { get; set; }
+            public ChildOne Child { get; set; }
+        }
+        public class ChildOne
+        {
+            public string ChildOneName { get; set; }
+            public ChildTwo Child { get; set; }
+        }
+        public class ChildTwo
+        {
+            public string ChildTwoName { get; set; }
+        }
+
+
+        static string DescribeTypeOfObject(Type type, string indent)
+        {
+            string? obj = string.Empty;
+
+            // is a custom class type? describe it too
+            if (type.IsClass && !type.FullName.StartsWith("System."))
+            {
+
+                PropertyInfo[] propertyInfos = type.GetProperties();
+                foreach (PropertyInfo pi in propertyInfos)
+                {
+                    var def = GetDefaultValueForProperty(pi);
+
+                    string strDef = def is { } ? new Serializer().Serialize(def) : "null\r\n";
+
+                    obj += $"{indent}{pi.Name}: {strDef}";
+
+                    // point B, we call the function type this property
+                    obj += DescribeTypeOfObject(pi.PropertyType, indent + "  ");
+                }
+            }
+
+            // done with all properties
+            // we return to the point where we were called
+            // point A for the first call
+            // point B for all properties of type custom class
+
+            return obj;
+        }
+
+        public static object GetDefaultValueForProperty(PropertyInfo property)
+        {
+            var defaultAttr = property.GetCustomAttribute(typeof(DefaultValueAttribute));
+            if (defaultAttr != null)
+                return (defaultAttr as DefaultValueAttribute).Value;
+
+            var propertyType = property.PropertyType;
+            return propertyType.IsValueType ? Activator.CreateInstance(propertyType) : null;
+        }
+
+        private static IDeserializer NewDeserilizer(MethodInfo testMethod, INodeTypeResolver resolver)
+        {
+            IDeserializer deserializer = new DeserializerBuilder()
+              .WithNodeTypeResolver(resolver)
+              //.WithNodeDeserializer(new MDATYamlNodeDeserializer(testMethod))
+              .IgnoreUnmatchedProperties()
+              .Build();
+            return deserializer;
+        }
+
+        public string? GetDisplayName(MethodInfo methodInfo, object?[]? data)
+        {
+            var parameters = methodInfo.GetParameters();
+
+
+            if (data != null)
+            {
+                var name = displayNames[data.GetHashCode()];
+                return $"{methodInfo.Name}@{_filePath}{name}";
+            }
+
+            return null;
+        }
+    }
+}
