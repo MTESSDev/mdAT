@@ -1,32 +1,24 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using MDATTests;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Linq.Expressions;
 using System.Reflection;
-using Xunit;
 
 namespace MDAT.Tests
 {
+    /// <summary>
+    /// Ignored comment
+    /// </summary>
     [TestClass]
     public class MarkdownTestAttributeTests
     {
         /// <summary>
-        /// 
+        /// Simple test, addition 2 numbers, compare expected result
         /// </summary>
         [TestMethod]
         [MarkdownTest("~\\Tests\\test.md")]
         public async Task Md1(int val1, int val2, string expected)
         {
-            object value = await Verify.Assert(() =>
-                                               Task.FromResult(Calculer(val1, val2)),
-                                               new Expected()
-                                               {
-                                                   data = expected,
-                                                   allowAdditionalProperties = true
-                                               });
-        }
-
-        private int Calculer(int val1, int val2)
-        {
-            return val1 + val2;
+            _ = await Verify.Assert(() => Task.FromResult(Utils.Calculer(val1, val2)), expected);
         }
 
         /// <summary>
