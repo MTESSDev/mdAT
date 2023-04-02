@@ -34,7 +34,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\dcTests\MDAT.csproj" />
+    <ProjectReference Include="..\MDAT\MDAT.csproj" />
   </ItemGroup>
 
   <ItemGroup>
