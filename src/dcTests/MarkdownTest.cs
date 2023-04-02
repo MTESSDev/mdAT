@@ -43,40 +43,12 @@ namespace MDAT
                     ? ParsedPath
                     : Path.GetRelativePath(Directory.GetCurrentDirectory(), ParsedPath);
 
-            MethodComments? methodComments = null;
-
             if (!File.Exists(ParsedPath))
             {
-                var assembly = Assembly.GetCallingAssembly();
-                string directoryPath = GetDirectoryPath(assembly);
-                string xmlFilePath = Path.Combine(directoryPath, assembly.GetName().Name + ".xml");
-                if (File.Exists(xmlFilePath))
-                {
-                    DocXmlReader reader = new DocXmlReader(xmlFilePath);
-                    methodComments = reader.GetMethodComments(testMethod);
-                }
-
-                var code = "";
-
-                foreach (var item in testMethod.GetParameters())
-                {
-
-                    var paramsDetails = methodComments?.Parameters.Where(e => e.Name == item.Name).FirstOrDefault();
-
-                    var strDetails = paramsDetails is { } ? $"# {paramsDetails.Value.Text}\r\n" : "";
-
-                    code += $"{strDetails}{item.Name}:\r\n{DescribeTypeOfObject(item.ParameterType, "  ")}";
-                }
-
-                var summary = methodComments is { }
-                                && !string.IsNullOrWhiteSpace(methodComments.Summary)
-                                ? $"\r\n\r\n> {methodComments?.Summary.Replace(Environment.NewLine,"\\" + Environment.NewLine)}"
-                                : "";
-
-                File.WriteAllText(ParsedPath, $"# {testMethod.Name}{summary}\r\n\r\n## Case 1\r\n\r\nDescription\r\n\r\n``````yaml\r\n{code}``````");
+                CreateMardownFile(testMethod, Assembly.GetCallingAssembly());
+                return Array.Empty<object[]>();
             }
 
-            // Load the file
             var fileData = File.ReadAllText(ParsedPath);
 
             var mdFile = Markdown.Parse(fileData);
@@ -97,7 +69,6 @@ namespace MDAT
                         lastHeading2 = null;
                         lastHeading3 = null;
                     }
-                      
 
                     if (add?.Level == 2)
                     {
@@ -112,8 +83,6 @@ namespace MDAT
                 else if (info is FencedCodeBlock fbc && fbc.ClosingFencedCharCount == 6 &&
                         (fbc.Info?.ToLower() == "yaml" || fbc.Info?.ToLower() == "yml"))
                 {
-                    IEnumerable<object[]> retour;
-
                     var doc = string.Join("\r\n", fbc.Lines);
 
                     if (string.IsNullOrWhiteSpace(doc)) continue;
@@ -141,14 +110,46 @@ namespace MDAT
                     displayNames.Add(values.GetHashCode(), $"{(lastHeading1 is { } ? "_" + lastHeading1 : "")}{(lastHeading2 is { } ? "_" + lastHeading2 : "")}{(lastHeading3 is { } ? "_" + lastHeading3 : "")}");
 
                     to.Add(values);
-                  
                 }
-
             }
 
             return to;
         }
 
+        private void CreateMardownFile(MethodInfo testMethod, Assembly assembly)
+        {
+            MethodComments? methodComments = null;
+
+            string directoryPath = GetDirectoryPath(assembly);
+            string xmlFilePath = Path.Combine(directoryPath, assembly.GetName().Name + ".xml");
+            if (File.Exists(xmlFilePath))
+            {
+                DocXmlReader reader = new DocXmlReader(xmlFilePath);
+                methodComments = reader.GetMethodComments(testMethod);
+            }
+
+            var code = "";
+
+            foreach (var item in testMethod.GetParameters())
+            {
+
+                var paramsDetails = methodComments?.Parameters.Where(e => e.Name == item.Name).FirstOrDefault();
+
+                var strDetails = paramsDetails is { } 
+                                        && paramsDetails.Value.Text is { } 
+                                        ? $"# {paramsDetails.Value.Text}\r\n" 
+                                        : "";
+
+                code += $"{strDetails}{item.Name}:\r\n{DescribeTypeOfObject(item.ParameterType, "  ")}";
+            }
+
+            var summary = methodComments is { }
+                            && !string.IsNullOrWhiteSpace(methodComments.Summary)
+                            ? $"\r\n\r\n> {methodComments?.Summary.Replace(Environment.NewLine, "\\" + Environment.NewLine)}"
+                            : "";
+
+            File.WriteAllText(ParsedPath, $"# {testMethod.Name}{summary}\r\n\r\n## Case 1\r\n\r\nDescription\r\n\r\n``````yaml\r\n{code}``````");
+        }
 
         public static string GetDirectoryPath(Assembly assembly)
         {
@@ -157,25 +158,6 @@ namespace MDAT
             string path = Uri.UnescapeDataString(uri.Path);
             return Path.GetDirectoryName(path);
         }
-
-        /// <summary>
-        /// Create an object structure the code can recursively describe
-        /// </summary>
-        public class Root
-        {
-            public string Name { get; set; }
-            public ChildOne Child { get; set; }
-        }
-        public class ChildOne
-        {
-            public string ChildOneName { get; set; }
-            public ChildTwo Child { get; set; }
-        }
-        public class ChildTwo
-        {
-            public string ChildTwoName { get; set; }
-        }
-
 
         static string DescribeTypeOfObject(Type type, string indent)
         {

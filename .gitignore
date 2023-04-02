@@ -351,3 +351,6 @@ MigrationBackup/
 
 #Tests Files
 /**/Generated/Generated-md-Test-*.md
+/**/coveragereport/**
+/**/.store/**
+/**/reportgenerator.exe

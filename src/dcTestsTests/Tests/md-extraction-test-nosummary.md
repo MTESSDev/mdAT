@@ -15,7 +15,6 @@ expected:
     Description
 
     ``````yaml
-    # 
     db:
       FW_NS_FORM_WEB: 0
       FW_N_PUBL_FORM_WEB: 00000000-0000-0000-0000-000000000000
@@ -24,7 +23,6 @@ expected:
       FW_NS_SYST_AUTR: 0
       FW_V_IDEN_UTIL: null
       FW_C_TYPE_FORM_WEB: null
-    # 
     expected:
       allowAdditionalProperties: false
       data: null
