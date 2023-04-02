@@ -36,7 +36,7 @@ namespace MDAT
             if (testMethod == null) { throw new ArgumentNullException(nameof(testMethod)); }
 
             _filePath = _filePath.Replace("{method}", testMethod.Name.Replace("_", "-").ToLower());
-            ParsedPath = _filePath.Replace("~\\", "..\\..\\..\\");
+            ParsedPath = _filePath.Replace("\\", Path.DirectorySeparatorChar).Replace("~" + Path.DirectorySeparatorChar, $"..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}");
 
             // Get the absolute path to the JSON file
             ParsedPath = Path.IsPathRooted(ParsedPath)
