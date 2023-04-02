@@ -16,7 +16,7 @@ namespace MDAT.Tests
         /// Simple test, addition 2 numbers, compare expected result
         /// </summary>
         [TestMethod]
-        [MarkdownTest("~\\Tests\\test.md")]
+        [MarkdownTest("~/Tests/test.md")]
         public async Task Md1(int val1, int val2, string expected)
         {
             _ = await Verify.Assert(() => Task.FromResult(Utils.Calculer(val1, val2)), expected);
