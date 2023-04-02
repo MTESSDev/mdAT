@@ -145,7 +145,7 @@ namespace MDAT
 
             var summary = methodComments is { }
                             && !string.IsNullOrWhiteSpace(methodComments.Summary)
-                            ? $"\r\n\r\n> {methodComments?.Summary.Replace(Environment.NewLine, "\\" + Environment.NewLine)}"
+                            ? $"\r\n\r\n> {methodComments?.Summary.Replace(Environment.NewLine, "\\\r\n")}"
                             : "";
 
             File.WriteAllText(ParsedPath, $"# {testMethod.Name}{summary}\r\n\r\n## Case 1\r\n\r\nDescription\r\n\r\n``````yaml\r\n{code}``````");
