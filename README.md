@@ -1,3 +1,5 @@
+![Code Coverage](https://img.shields.io/badge/Code%20Coverage-92%25-success?style=flat)
+
 # mdAT - Markdown Auto-Tests
 
 ``mdAT`` is a simple library that replaces unit and integration tests. With ``mdAT``, developers can write unit tests in the traditional way, but without the need to add many test data from JSON, XML, YAML files, or use manual ``[InlideData]`` with escaped JSON object.
