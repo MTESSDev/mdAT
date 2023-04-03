@@ -36,36 +36,3 @@ public static class Verify
 
 
 }
-
-
-
-public static class Extensions
-{
-    public static void Assert(dynamic? obj, Expected expected)
-    {
-        if (expected is null) throw new ArgumentNullException(nameof(expected));
-
-        expected!.data ??= "null";
-
-        if (!expected.data.ValidateJSON())
-            expected.data = JsonConvert.SerializeObject(expected?.data?.ReplaceLineEndings("\r\n"));
-
-        JsonAssert.EqualOverrideDefault(expected!.data,
-                                JsonConvert.SerializeObject(obj),
-                                new JsonDiffConfig(expected?.allowAdditionalProperties ?? true));
-
-    }
-
-    public static bool ValidateJSON(this string s)
-    {
-        try
-        {
-            JToken.Parse(s);
-            return true;
-        }
-        catch (JsonReaderException)
-        {
-            return false;
-        }
-    }
-}
