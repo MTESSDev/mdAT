@@ -148,9 +148,10 @@ namespace MDAT
         public static string GetDirectoryPath(Assembly assembly)
         {
             string codeBase = assembly.Location;
-            UriBuilder uri = new UriBuilder(codeBase);
-            string path = Uri.UnescapeDataString(uri.Path);
-            return Path.GetDirectoryName(path) ?? throw new InvalidProgramException("Can't get DLL path.");
+            //System.Diagnostics.Trace.WriteLine("Location=" + codeBase);
+            //UriBuilder uri = new UriBuilder(codeBase);
+            //string path = Uri.UnescapeDataString(uri.Path);
+            return Path.GetDirectoryName(codeBase) ?? throw new InvalidProgramException("Can't get DLL path.");
         }
 
         static string DescribeTypeOfObject(Type type, string indent)
