@@ -10,7 +10,7 @@
 		<Company>MESS</Company>
 		<PackageProjectUrl>https://github.com/MTESSDev/mdAT</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/MTESSDev/mdAT</RepositoryUrl>
-		<Version>1.0.0-beta1</Version>
+		<Version>1.0.0-beta2</Version>
 		<Description>Markdown Auto-Tests for .net 6+, based on MSTestsV2 DataSource.</Description>
   </PropertyGroup>
 

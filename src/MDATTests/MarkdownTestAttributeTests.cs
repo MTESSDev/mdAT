@@ -91,6 +91,9 @@ namespace MDAT.Tests
         }
     }
 
+    /// <summary>
+    /// Form obj
+    /// </summary>
     public class FormulaireWebFRW1DO
     {
         /// <summary>
@@ -129,5 +132,21 @@ namespace MDAT.Tests
         /// <example>3003</example>
         public string FW_C_TYPE_FORM_WEB { get; set; } = default!;
 
+        /// <summary>
+        /// Sub type test
+        /// </summary>
+        public SubType SubType { get; set; }
+
+    }
+
+    /// <summary>
+    /// Sub class
+    /// </summary>
+    public class SubType
+    {
+        /// <summary>
+        /// Other recusive
+        /// </summary>
+        public SubType Other { get; set; }
     }
 }

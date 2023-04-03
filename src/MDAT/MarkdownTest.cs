@@ -39,7 +39,7 @@ namespace MDAT
 
             if (!File.Exists(ParsedPath))
             {
-                CreateMardownFile(testMethod, Assembly.GetCallingAssembly());
+                CreateMardownFile(testMethod);
                 return Array.Empty<object[]>();
             }
 
@@ -110,12 +110,12 @@ namespace MDAT
             return to;
         }
 
-        private void CreateMardownFile(MethodInfo testMethod, Assembly assembly)
+        private void CreateMardownFile(MethodInfo testMethod)
         {
             MethodComments? methodComments = null;
 
-            string directoryPath = GetDirectoryPath(assembly);
-            string xmlFilePath = Path.Combine(directoryPath, assembly.GetName().Name + ".xml");
+            string directoryPath = testMethod.DeclaringType!.Assembly.Location;
+            string xmlFilePath = directoryPath.Replace(".dll", ".xml");
             if (File.Exists(xmlFilePath))
             {
                 DocXmlReader reader = new DocXmlReader(xmlFilePath);
@@ -129,9 +129,9 @@ namespace MDAT
 
                 var paramsDetails = methodComments?.Parameters.Where(e => e.Name == item.Name).FirstOrDefault();
 
-                var strDetails = paramsDetails is { } 
-                                        && paramsDetails.Value.Text is { } 
-                                        ? $"# {paramsDetails.Value.Text}\r\n" 
+                var strDetails = paramsDetails is { }
+                                        && paramsDetails.Value.Text is { }
+                                        ? $"# {paramsDetails.Value.Text}\r\n"
                                         : "";
 
                 code += $"{strDetails}{item.Name}:\r\n{DescribeTypeOfObject(item.ParameterType, "  ")}";
@@ -145,14 +145,13 @@ namespace MDAT
             File.WriteAllText(ParsedPath, $"# {testMethod.Name}{summary}\r\n\r\n## Case 1\r\n\r\nDescription\r\n\r\n``````yaml\r\n{code}``````");
         }
 
-        public static string GetDirectoryPath(Assembly assembly)
+        static string DescribeTypeOfObject(Type type, string indent, int pos = 0)
         {
-            string codeBase = assembly.Location;
-            return Path.GetDirectoryName(codeBase) ?? throw new InvalidProgramException("Can't get DLL path.");
-        }
+            if (pos == 10)
+                return string.Empty; // Loop protection
+            else
+                pos++;
 
-        static string DescribeTypeOfObject(Type type, string indent)
-        {
             string? obj = string.Empty;
 
             // is a custom class type? describe it too
@@ -168,7 +167,7 @@ namespace MDAT
                     obj += $"{indent}{pi.Name}: {strDef}";
 
                     // point B, we call the function type this property
-                    obj += DescribeTypeOfObject(pi.PropertyType, indent + "  ");
+                    obj += DescribeTypeOfObject(pi.PropertyType, indent + "  ", pos);
                 }
             }
 
