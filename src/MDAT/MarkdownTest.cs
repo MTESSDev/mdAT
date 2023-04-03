@@ -148,9 +148,6 @@ namespace MDAT
         public static string GetDirectoryPath(Assembly assembly)
         {
             string codeBase = assembly.Location;
-            //System.Diagnostics.Trace.WriteLine("Location=" + codeBase);
-            //UriBuilder uri = new UriBuilder(codeBase);
-            //string path = Uri.UnescapeDataString(uri.Path);
             return Path.GetDirectoryName(codeBase) ?? throw new InvalidProgramException("Can't get DLL path.");
         }
 
@@ -192,7 +189,6 @@ namespace MDAT
         {
             IDeserializer deserializer = new DeserializerBuilder()
               .WithNodeTypeResolver(resolver)
-              //.WithNodeDeserializer(new MDATYamlNodeDeserializer(testMethod))
               .IgnoreUnmatchedProperties()
               .Build();
             return deserializer;
