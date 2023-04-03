@@ -1,18 +1,12 @@
 ﻿using System.Reflection;
-using System.Text.RegularExpressions;
 using YamlDotNet.Serialization;
 using MDAT.Resolver;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Globalization;
-using Newtonsoft.Json;
 using Markdig;
 using Markdig.Syntax;
-using System.Reflection.Metadata;
-using Markdig.Parsers;
 using System.ComponentModel;
 using YamlDotNet.Core;
 using LoxSmoke.DocXml;
-using System.IO;
 
 namespace MDAT
 {
@@ -153,10 +147,10 @@ namespace MDAT
 
         public static string GetDirectoryPath(Assembly assembly)
         {
-            string codeBase = assembly.CodeBase;
+            string codeBase = assembly.Location;
             UriBuilder uri = new UriBuilder(codeBase);
             string path = Uri.UnescapeDataString(uri.Path);
-            return Path.GetDirectoryName(path);
+            return Path.GetDirectoryName(path) ?? throw new InvalidProgramException("Can't get DLL path.");
         }
 
         static string DescribeTypeOfObject(Type type, string indent)
@@ -164,9 +158,8 @@ namespace MDAT
             string? obj = string.Empty;
 
             // is a custom class type? describe it too
-            if (type.IsClass && !type.FullName.StartsWith("System."))
+            if (type.IsClass && !type.FullName!.StartsWith("System."))
             {
-
                 PropertyInfo[] propertyInfos = type.GetProperties();
                 foreach (PropertyInfo pi in propertyInfos)
                 {
@@ -181,19 +174,14 @@ namespace MDAT
                 }
             }
 
-            // done with all properties
-            // we return to the point where we were called
-            // point A for the first call
-            // point B for all properties of type custom class
-
             return obj;
         }
 
-        public static object GetDefaultValueForProperty(PropertyInfo property)
+        public static object? GetDefaultValueForProperty(PropertyInfo property)
         {
             var defaultAttr = property.GetCustomAttribute(typeof(DefaultValueAttribute));
             if (defaultAttr != null)
-                return (defaultAttr as DefaultValueAttribute).Value;
+                return (defaultAttr as DefaultValueAttribute)?.Value;
 
             var propertyType = property.PropertyType;
             return propertyType.IsValueType ? Activator.CreateInstance(propertyType) : null;
