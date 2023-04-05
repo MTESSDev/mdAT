@@ -23,16 +23,25 @@ expected:
       FW_NS_SYST_AUTR: 0
       FW_V_IDEN_UTIL: null
       FW_C_TYPE_FORM_WEB: null
-      SubType: null
-        Other: null
-          Other: null
-            Other: null
-              Other: null
-                Other: null
-                  Other: null
-                    Other: null
-                      Other: null
+      SubType: 
+        Other: 
+          Other: 
+            Other: 
+              Other: 
+                Other: 
+                  Other: 
+                    Other: 
+                      Other: 
                         Other: null
+                        Obj: null
+                      Obj: null
+                    Obj: null
+                  Obj: null
+                Obj: null
+              Obj: null
+            Obj: null
+          Obj: null
+        Obj: null
     expected:
       allowAdditionalProperties: false
       data: null

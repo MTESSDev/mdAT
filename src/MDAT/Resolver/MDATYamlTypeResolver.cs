@@ -15,6 +15,7 @@ public sealed class MDATYamlTypeResolver : INodeTypeResolver
 
     private readonly MethodInfo _testMethod;
     private int _pos = 0;
+    private int _startPos = 1;
     public MDATYamlTypeResolver(MethodInfo testMethod)
     {
         _testMethod = testMethod;
@@ -22,7 +23,13 @@ public sealed class MDATYamlTypeResolver : INodeTypeResolver
 
     bool INodeTypeResolver.Resolve(NodeEvent? nodeEvent, ref Type currentType)
     {
-        if (currentType == typeof(object))
+        if (nodeEvent!.Start.Column == 1)
+            _startPos = 1;
+
+        if (nodeEvent!.Start.Column != 1 && _startPos == 1)
+            _startPos = nodeEvent.Start.Column;
+
+        if (_startPos != 1 && nodeEvent.Start.Column == _startPos && currentType == typeof(object))
         {
             if (nodeEvent is MappingStart || nodeEvent is Scalar || nodeEvent is SequenceStart)
             {

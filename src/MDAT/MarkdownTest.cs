@@ -7,6 +7,7 @@ using Markdig.Syntax;
 using System.ComponentModel;
 using YamlDotNet.Core;
 using LoxSmoke.DocXml;
+using Xunit.Sdk;
 
 namespace MDAT
 {
@@ -43,71 +44,79 @@ namespace MDAT
                 return Array.Empty<object[]>();
             }
 
+            List<object[]> to = LoadMarkdownFile(testMethod);
+
+            return to;
+        }
+
+        private List<object[]> LoadMarkdownFile(MethodInfo testMethod)
+        {
             var fileData = File.ReadAllText(ParsedPath);
 
             var mdFile = Markdown.Parse(fileData);
 
-            string? lastHeading1 = null;
-            string? lastHeading2 = null;
-            string? lastHeading3 = null;
+            string?[] lastHeading = new string?[] { null, null, null, null, null, null };
 
-            List<object[]> to = new List<object[]>();
+            List<object[]> to = new();
 
             foreach (var info in mdFile)
             {
                 if (info is HeadingBlock add)
                 {
-                    if (add?.Level == 1)
-                    {
-                        lastHeading1 = add?.Inline?.FirstOrDefault()?.ToString();
-                        lastHeading2 = null;
-                        lastHeading3 = null;
-                    }
-
-                    if (add?.Level == 2)
-                    {
-                        lastHeading2 = add?.Inline?.FirstOrDefault()?.ToString();
-                        lastHeading3 = null;
-                    }
-
-                    if (add?.Level == 3)
-                        lastHeading3 = add?.Inline?.FirstOrDefault()?.ToString();
-
+                    SetHeadings(lastHeading, add);
                 }
-                else if (info is FencedCodeBlock fbc && fbc.ClosingFencedCharCount == 6 &&
-                        (fbc.Info?.ToLower() == "yaml" || fbc.Info?.ToLower() == "yml"))
+                else if (info is FencedCodeBlock fbc
+                        && fbc.ClosingFencedCharCount == 6
+                        && (fbc.Info?.ToLower() == "yaml" || fbc.Info?.ToLower() == "yml"))
                 {
                     var doc = string.Join("\r\n", fbc.Lines);
 
-                    if (string.IsNullOrWhiteSpace(doc)) continue;
+                    if (string.IsNullOrWhiteSpace(doc))
+                        continue;
 
-                    var resolver = new MDATYamlTypeResolver(testMethod);
+                    var values = ExtractTest(testMethod, doc);
 
-                    IDeserializer deserializer = NewDeserilizer(testMethod, resolver);
-
-                    object[]? values = null;
-
-                    try
-                    {
-                        var ggs = deserializer.Deserialize<Dictionary<string, object>>(doc);
-
-
-                        if (ggs is null) continue;
-                        values = ggs.Values.ToArray();
-
-                    }
-                    catch (YamlException ex)
-                    {
-                        var invalidName = testMethod.GetParameters()[resolver.Position - 1];
-                        throw new InternalTestFailureException($"Method '{testMethod.Name}' exception on '{invalidName.Name}' parameter.'\r\n{ex.Message}\r\n{ex.InnerException?.Message}", ex);
-                    }
-                    displayNames.Add(values.GetHashCode(), $"{(lastHeading1 is { } ? "_" + lastHeading1 : "")}{(lastHeading2 is { } ? "_" + lastHeading2 : "")}{(lastHeading3 is { } ? "_" + lastHeading3 : "")}");
+                    displayNames.Add(values.GetHashCode(), $"{(lastHeading[0] is { } ? "_" + lastHeading[0] : "")}{(lastHeading[1] is { } ? "_" + lastHeading[1] : "")}{(lastHeading[2] is { } ? "_" + lastHeading[2] : "")}");
 
                     to.Add(values);
                 }
             }
 
             return to;
+        }
+
+        private static void SetHeadings(string?[] heading, HeadingBlock add)
+        {
+            heading[add.Level - 1] = add.Inline?.FirstOrDefault()?.ToString();
+
+            for (int i = add.Level ; i < 6; i++)
+            {
+                heading[i] = null;
+            }
+        }
+
+        private static object[] ExtractTest(MethodInfo testMethod, string doc)
+        {
+            var resolver = new MDATYamlTypeResolver(testMethod);
+
+            IDeserializer deserializer = NewDeserializer(testMethod, resolver);
+
+            object[]? values;
+            try
+            {
+                var ggs = deserializer.Deserialize<Dictionary<string, object>>(doc);
+
+                if (ggs is null) return default!;
+                values = ggs.Values.ToArray();
+
+            }
+            catch (YamlException ex)
+            {
+                var invalidName = testMethod.GetParameters()[resolver.Position - 1];
+                throw new InternalTestFailureException($"Method '{testMethod.Name}' exception on '{invalidName.Name}' parameter.'\r\n{ex.Message}\r\n{ex.InnerException?.Message}", ex);
+            }
+
+            return values;
         }
 
         private void CreateMardownFile(MethodInfo testMethod)
@@ -145,14 +154,14 @@ namespace MDAT
             File.WriteAllText(ParsedPath, $"# {testMethod.Name}{summary}\r\n\r\n## Case 1\r\n\r\nDescription\r\n\r\n``````yaml\r\n{code}``````");
         }
 
-        static string DescribeTypeOfObject(Type type, string indent, int pos = 0)
+        static string? DescribeTypeOfObject(Type type, string indent, int pos = 0)
         {
             if (pos == 10)
                 return string.Empty; // Loop protection
             else
                 pos++;
 
-            string? obj = string.Empty;
+            string? obj = null;
 
             // is a custom class type? describe it too
             if (type.IsClass && !type.FullName!.StartsWith("System."))
@@ -162,16 +171,18 @@ namespace MDAT
                 {
                     var def = GetDefaultValueForProperty(pi);
 
-                    string strDef = def is { } ? new Serializer().Serialize(def).ReplaceLineEndings("\r\n") : "null\r\n";
+                    var innerObj = DescribeTypeOfObject(pi.PropertyType, indent + "  ", pos);
 
-                    obj += $"{indent}{pi.Name}: {strDef}";
-
-                    // point B, we call the function type this property
-                    obj += DescribeTypeOfObject(pi.PropertyType, indent + "  ", pos);
+                    obj += $"{indent}{pi.Name}: {(string.IsNullOrEmpty(innerObj) ? GetDefaultValue(def) : "\r\n" + innerObj)}";
                 }
             }
 
             return obj;
+        }
+
+        private static string GetDefaultValue(object? def)
+        {
+            return def is { } ? new Serializer().Serialize(def).ReplaceLineEndings("\r\n") : "null\r\n";
         }
 
         public static object? GetDefaultValueForProperty(PropertyInfo property)
@@ -184,7 +195,7 @@ namespace MDAT
             return propertyType.IsValueType ? Activator.CreateInstance(propertyType) : null;
         }
 
-        private static IDeserializer NewDeserilizer(MethodInfo testMethod, INodeTypeResolver resolver)
+        private static IDeserializer NewDeserializer(MethodInfo testMethod, INodeTypeResolver resolver)
         {
             IDeserializer deserializer = new DeserializerBuilder()
               .WithNodeTypeResolver(resolver)

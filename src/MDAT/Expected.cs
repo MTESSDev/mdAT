@@ -3,5 +3,5 @@
 public class Expected
 {
     public bool allowAdditionalProperties { get; set; }
-    public string? data { get; set; }
+    public object? data { get; set; }
 }

@@ -8,17 +8,25 @@ public static class Extensions
 {
     public static void Assert(dynamic? obj, Expected expected)
     {
-        if (expected is null) throw new ArgumentNullException(nameof(expected));
+        expected ??= new Expected();
 
         expected!.data ??= "null";
 
-        if (!expected.data.ValidateJSON())
-            expected.data = JsonConvert.SerializeObject(expected?.data?.ReplaceLineEndings("\r\n"));
+        if (!expected.data.ToString()!.ValidateJSON())
+        {
+            if(expected.data is string)
+            {
+                expected.data = JsonConvert.SerializeObject(expected.data.ToString()!.ReplaceLineEndings("\r\n"));
+            }
+            else
+            {
+                expected.data = JsonConvert.SerializeObject(expected.data);
+            }
+        }
 
-        JsonAssert.EqualOverrideDefault(expected!.data,
+        JsonAssert.EqualOverrideDefault(expected!.data.ToString(),
                                 JsonConvert.SerializeObject(obj),
-                                new JsonDiffConfig(expected?.allowAdditionalProperties ?? true));
-
+                                new JsonDiffConfig(expected.allowAdditionalProperties));
     }
 
     public static bool ValidateJSON(this string s)

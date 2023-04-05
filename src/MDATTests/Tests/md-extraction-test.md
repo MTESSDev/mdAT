@@ -9,14 +9,14 @@ expected:
   allowAdditionalProperties: false
   data: |
     # MdWithSummary
-    
+
     > Simple summary test for validation\
     With multiline
-    
+
     ## Case 1
-    
+
     Description
-    
+
     ``````yaml
     # Database mock
     db:
@@ -27,16 +27,25 @@ expected:
       FW_NS_SYST_AUTR: 0
       FW_V_IDEN_UTIL: null
       FW_C_TYPE_FORM_WEB: null
-      SubType: null
-        Other: null
-          Other: null
-            Other: null
-              Other: null
-                Other: null
-                  Other: null
-                    Other: null
-                      Other: null
+      SubType: 
+        Other: 
+          Other: 
+            Other: 
+              Other: 
+                Other: 
+                  Other: 
+                    Other: 
+                      Other: 
                         Other: null
+                        Obj: null
+                      Obj: null
+                    Obj: null
+                  Obj: null
+                Obj: null
+              Obj: null
+            Obj: null
+          Obj: null
+        Obj: null
     # Expected result
     expected:
       allowAdditionalProperties: false
