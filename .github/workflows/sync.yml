@@ -12,6 +12,11 @@ jobs:
     if: ${{ !github.event.issue.pull_request }}
     runs-on: self-hosted
     steps:
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: |
+          echo "$GITHUB_CONTEXT"
       - uses: MTESSDev/github-actions-issue-to-work-item@master
         env:
           NODE_TLS_REJECT_UNAUTHORIZED: 0
