@@ -34,6 +34,16 @@ namespace MDAT.Tests
         }
 
         /// <summary>
+        /// Dictionary_object_object
+        /// </summary>
+        [TestMethod]
+        [MarkdownTest("~/Tests/{method}.md")]
+        public async Task Dictionary_object_object(Dictionary<object, object> dict, Expected expected)
+        {
+            _ = await Verify.Assert(() => Task.FromResult(dict), expected);
+        }
+
+        /// <summary>
         /// Exception test
         /// </summary>
         [TestMethod]

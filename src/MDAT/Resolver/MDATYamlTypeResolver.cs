@@ -15,7 +15,7 @@ public sealed class MDATYamlTypeResolver : INodeTypeResolver
 
     private readonly MethodInfo _testMethod;
     private int _pos = 0;
-    private int _startPos = 1;
+    private bool setNext = false;
     public MDATYamlTypeResolver(MethodInfo testMethod)
     {
         _testMethod = testMethod;
@@ -23,24 +23,34 @@ public sealed class MDATYamlTypeResolver : INodeTypeResolver
 
     bool INodeTypeResolver.Resolve(NodeEvent? nodeEvent, ref Type currentType)
     {
-        if (nodeEvent!.Start.Column == 1)
-            _startPos = 1;
+        if (nodeEvent is null) return false;
 
-        if (nodeEvent!.Start.Column != 1 && _startPos == 1)
-            _startPos = nodeEvent.Start.Column;
+        if (nodeEvent.Start.Column == 1
+            && nodeEvent.Start.Line == nodeEvent.End.Line
+            && nodeEvent.Start.Index == nodeEvent.End.Index
+            && nodeEvent.Start.Column == nodeEvent.End.Column
+            && nodeEvent is MappingStart node && node.Style == MappingStyle.Block)
+            return false;
 
-        if (_startPos != 1 && nodeEvent.Start.Column == _startPos && currentType == typeof(object))
+        if (nodeEvent.Start.Column == 1
+         && (nodeEvent is Scalar scal && scal.IsKey
+         || nodeEvent is Scalar scal2 && scal2.IsKey))
         {
-            if (nodeEvent is MappingStart || nodeEvent is Scalar || nodeEvent is SequenceStart)
-            {
-                var parameters = _testMethod.GetParameters();
+            setNext = true;
+            return false;
+        }
 
-                if (parameters.Count() != 0 && _pos > parameters.Count()) throw new Exception($"Method '{_testMethod.Name}' has '{parameters.Count()}' parameters, can't get param number '{_pos}'");
+        if (setNext)
+        {
+            setNext = false;
 
-                Type type = parameters[_pos++].ParameterType;
-                currentType = type;
-                return true;
-            }
+            var parameters = _testMethod.GetParameters();
+
+            if (parameters.Count() != 0 && _pos > parameters.Count()) throw new Exception($"Method '{_testMethod.Name}' has '{parameters.Count()}' parameters, can't get param number '{_pos}'");
+
+            Type type = parameters[_pos++].ParameterType;
+            currentType = type;
+            return true;
         }
 
         return false;
