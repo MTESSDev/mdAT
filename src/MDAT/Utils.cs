@@ -47,4 +47,35 @@ public static class Extensions
         return path.Replace('\\', Path.DirectorySeparatorChar)
                    .Replace('/', Path.DirectorySeparatorChar);
     }
+
+    public static Dictionary<object, object> FixDict(this Dictionary<object, object> dictionary)
+    {
+        Dictionary<object, object> dict = new();
+
+        foreach (var item in dictionary)
+        {
+            if (item.Value is object[] dic)
+                dict.Add(item.Key, FixDict(dic));
+            else
+                dict.Add(item.Key, item.Value);
+        }
+
+        return dict;
+    }
+
+    private static Dictionary<object, object> FixDict(object[] obj)
+    {
+        Dictionary<object, object> dict = new();
+
+        foreach (var item in obj)
+        {
+            if (item is KeyValuePair<object, object> keypair)
+                if (keypair.Value is object[])
+                    dict.Add(keypair.Key, FixDict((object[])keypair.Value));
+                else
+                    dict.Add(keypair.Key, keypair.Value);
+        }
+
+        return dict;
+    }
 }

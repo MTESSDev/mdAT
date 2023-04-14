@@ -13,6 +13,34 @@ namespace MDAT.Tests
     [TestClass]
     public class MarkdownTestAttributeTests
     {
+
+        /// <summary/>
+        public class Params
+        {
+            public Dictionary<object, object> Test { get; set; }
+        }
+
+        static IEnumerable<object[]> ReusableTestDataProperty
+        {
+            get
+            {
+                return new[]
+                {
+                    new object[] { new Params() { Test = new Dictionary<object, object> { { "test", new Dictionary<object, object> { { "test", 1 } } } } } },
+                };
+            }
+        }
+
+        /// <summary>
+        /// Simple test, addition 2 numbers, compare expected result
+        /// </summary>
+        [TestMethod]
+        [DynamicData("ReusableTestDataProperty")]
+        public async Task Dynam(Params val1)
+        {
+            _ = await Verify.Assert(() => Task.FromResult(val1), new Expected() { data = "{\"Test\":{\"test\":{\"test\":1}}}" });
+        }
+
         /// <summary>
         /// Simple test, addition 2 numbers, compare expected result
         /// </summary>

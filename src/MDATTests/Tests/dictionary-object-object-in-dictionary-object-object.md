@@ -9,9 +9,10 @@ Description
 ``````yaml
 dict:
   key1: 
-    subkey1: val1
+    subkey1: 
+       subsubkey: "F"
     subkey2: 2
 expected:
   allowAdditionalProperties: false
-  data: {"key1":{"subkey1":"val1","subkey2":"2"}}
+  data: {"key1":{"subkey1":{"subsubkey":"F"},"subkey2":"2"}}
 ``````
