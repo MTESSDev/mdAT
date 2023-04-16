@@ -55,7 +55,7 @@ namespace MDAT
 
             var mdFile = Markdown.Parse(fileData);
 
-            string?[] lastHeading = new string?[] { null, null, null, null, null, null };
+            string?[] headings = new string?[] { null, null, null, null, null, null };
 
             List<object[]> to = new();
 
@@ -63,7 +63,7 @@ namespace MDAT
             {
                 if (info is HeadingBlock add)
                 {
-                    SetHeadings(lastHeading, add);
+                    SetHeadings(headings, add);
                 }
                 else if (info is FencedCodeBlock fbc
                         && fbc.ClosingFencedCharCount == 6
@@ -76,7 +76,7 @@ namespace MDAT
 
                     var values = ExtractTest(testMethod, doc);
 
-                    displayNames.Add(values.GetHashCode(), $"{(lastHeading[0] is { } ? "_" + lastHeading[0] : "")}{(lastHeading[1] is { } ? "_" + lastHeading[1] : "")}{(lastHeading[2] is { } ? "_" + lastHeading[2] : "")}");
+                    displayNames.Add(values.GetHashCode(), "_" + string.Join("_",  headings.Where(s => !string.IsNullOrWhiteSpace(s))));
 
                     to.Add(values);
                 }
