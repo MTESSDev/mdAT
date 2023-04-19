@@ -45,7 +45,7 @@ namespace MDAT.Resolver
 
             if(expectedType == typeof(string))
             {
-                return File.ReadAllText(includePath);
+                return File.ReadAllText(includePath).ReplaceLineEndings("\r\n");
             }
 
             if (RamlExtensionRegex.IsMatch(extension))
@@ -55,7 +55,7 @@ namespace MDAT.Resolver
 
             if (JsonExtensionRegex.IsMatch(extension))
             {
-                return File.ReadAllText(includePath);
+                return File.ReadAllText(includePath).ReplaceLineEndings("\r\n");
             }
 
             throw new NotSupportedException($"The file extension '{extension}' is not supported in a '{MdatConstants.IncludeTag}' tag.");
