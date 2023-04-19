@@ -74,9 +74,9 @@ namespace MDAT
                     if (string.IsNullOrWhiteSpace(doc))
                         continue;
 
-                    var values = ExtractTest(testMethod, doc);
+                    var values = ExtractTest(testMethod, doc, Path.GetDirectoryName(ParsedPath));
 
-                    displayNames.Add(values.GetHashCode(), "_" + string.Join("_",  headings.Where(s => !string.IsNullOrWhiteSpace(s))));
+                    displayNames.Add(values.GetHashCode(), "_" + string.Join("_", headings.Where(s => !string.IsNullOrWhiteSpace(s))));
 
                     to.Add(values);
                 }
@@ -89,17 +89,17 @@ namespace MDAT
         {
             heading[add.Level - 1] = add.Inline?.FirstOrDefault()?.ToString();
 
-            for (int i = add.Level ; i < 6; i++)
+            for (int i = add.Level; i < 6; i++)
             {
                 heading[i] = null;
             }
         }
 
-        private static object[] ExtractTest(MethodInfo testMethod, string doc)
+        private static object[] ExtractTest(MethodInfo testMethod, string doc, string directoryName)
         {
             var resolver = new MDATYamlTypeResolver(testMethod);
 
-            IDeserializer deserializer = NewDeserializer(testMethod, resolver);
+            IDeserializer deserializer = NewDeserializer(testMethod, resolver, directoryName);
 
             object[]? values;
             try
@@ -195,13 +195,24 @@ namespace MDAT
             return propertyType.IsValueType ? Activator.CreateInstance(propertyType) : null;
         }
 
-        private static IDeserializer NewDeserializer(MethodInfo testMethod, INodeTypeResolver resolver)
+        private static IDeserializer NewDeserializer(MethodInfo testMethod, INodeTypeResolver resolver, string directoryName)
         {
-            IDeserializer deserializer = new DeserializerBuilder()
+            DeserializerBuilder deserializer = new DeserializerBuilder()
               .WithNodeTypeResolver(resolver)
               .IgnoreUnmatchedProperties()
-              .Build();
-            return deserializer;
+              .WithTagMapping(MdatConstants.IncludeTag, typeof(IncludeRef));
+
+            var includeNodeDeserializerOptions = new YamlIncludeNodeDeserializerOptions
+            {
+                DirectoryName = directoryName, 
+                Builder = deserializer
+            };
+
+            var includeNodeDeserializer = new YamlIncludeNodeDeserializer(includeNodeDeserializerOptions);
+
+            deserializer.WithNodeDeserializer(includeNodeDeserializer, s => s.OnTop());
+
+            return deserializer.Build();
         }
 
         public string? GetDisplayName(MethodInfo methodInfo, object?[]? data)

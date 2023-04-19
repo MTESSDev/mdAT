@@ -62,6 +62,26 @@ namespace MDAT.Tests
         }
 
         /// <summary>
+        /// External file include
+        /// </summary>
+        [TestMethod]
+        [MarkdownTest("~/Tests/{method}.md")]
+        public async Task External_file(FormulaireWebFRW1DO form, Expected expected)
+        {
+            _ = await Verify.Assert(() => Task.FromResult(form), expected);
+        }
+
+        /// <summary>
+        /// External file include 2
+        /// </summary>
+        [TestMethod]
+        [MarkdownTest("~/Tests/{method}.md")]
+        public async Task External_file2(string form, Expected expected)
+        {
+            _ = await Verify.Assert(() => Task.FromResult(form), expected);
+        }
+
+        /// <summary>
         /// Dictionary_object_object
         /// </summary>
         [TestMethod]
