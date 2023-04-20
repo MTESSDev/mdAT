@@ -82,6 +82,26 @@ namespace MDAT.Tests
         }
 
         /// <summary>
+        /// External file include base64
+        /// </summary>
+        [TestMethod]
+        [MarkdownTest("~/Tests/{method}.md")]
+        public async Task External_file_base64(byte[] form, Expected expected)
+        {
+            _ = await Verify.Assert(() => Task.FromResult(form), expected);
+        }
+
+        /// <summary>
+        /// External file include base64 string
+        /// </summary>
+        [TestMethod]
+        [MarkdownTest("~/Tests/{method}.md")]
+        public async Task External_file_base64_String(string form, Expected expected)
+        {
+            _ = await Verify.Assert(() => Task.FromResult(form), expected);
+        }
+
+        /// <summary>
         /// Dictionary_object_object
         /// </summary>
         [TestMethod]

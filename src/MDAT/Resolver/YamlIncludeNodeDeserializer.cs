@@ -10,7 +10,7 @@ namespace MDAT.Resolver
     public class YamlIncludeNodeDeserializer : INodeDeserializer
     {
         private static readonly Regex JsonExtensionRegex = new(@"^\.json$", RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Singleline);
-        private static readonly Regex RamlExtensionRegex = new(@"^\.y[a]{0,1}ml$", RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Singleline);
+        private static readonly Regex YamlExtensionRegex = new(@"^\.y[a]{0,1}ml$", RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Singleline);
 
         private readonly YamlIncludeNodeDeserializerOptions _options;
 
@@ -26,7 +26,7 @@ namespace MDAT.Resolver
                 string fileName = scalar.Value.Replace('/', Path.DirectorySeparatorChar);
                 var extension = Path.GetExtension(fileName);
 
-                if (scalar.Tag == MdatConstants.IncludeTag || (scalar.Tag != MdatConstants.IncludeTag && (RamlExtensionRegex.IsMatch(extension) || JsonExtensionRegex.IsMatch(extension))))
+                if (scalar.Tag == MdatConstants.IncludeTag || (scalar.Tag != MdatConstants.IncludeTag && (YamlExtensionRegex.IsMatch(extension) || JsonExtensionRegex.IsMatch(extension))))
                 {
                     var includePath = Path.Combine(_options.DirectoryName, fileName);
                     value = ReadIncludedFile(_options.Builder, includePath, expectedType);
@@ -43,22 +43,31 @@ namespace MDAT.Resolver
         {
             var extension = Path.GetExtension(includePath);
 
-            if(expectedType == typeof(string))
+            if (expectedType == typeof(byte[]))
             {
-                return File.ReadAllText(includePath).ReplaceLineEndings("\r\n");
+                return File.ReadAllBytes(includePath);
             }
 
-            if (RamlExtensionRegex.IsMatch(extension))
+            if (YamlExtensionRegex.IsMatch(extension))
             {
+                if (expectedType == typeof(string))
+                {
+                    return File.ReadAllText(includePath).ReplaceLineEndings("\r\n");
+                }
+
                 return deserializer.Build().Deserialize(new Parser(File.OpenText(includePath)), expectedType);
             }
 
             if (JsonExtensionRegex.IsMatch(extension))
             {
+                if (expectedType == typeof(string))
+                {
+                    return File.ReadAllText(includePath).ReplaceLineEndings("\r\n");
+                }
                 return File.ReadAllText(includePath).ReplaceLineEndings("\r\n");
             }
 
-            throw new NotSupportedException($"The file extension '{extension}' is not supported in a '{MdatConstants.IncludeTag}' tag.");
+            return Convert.ToBase64String(File.ReadAllBytes(includePath));
         }
     }
 
