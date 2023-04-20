@@ -238,5 +238,15 @@ namespace MDAT.Tests
             object value = await Verify.Assert(() =>
                                         Task.FromResult(File.ReadAllText(test.ParsedPath)), expected);
         }
+
+        /// <summary>
+        /// Test output expected
+        /// </summary>
+        [TestMethod]
+        [MarkdownTest("~/Tests/{method}.md")]
+        public async Task Output_expected(Dictionary<string, string> form, Expected expected)
+        {
+            _ = await Verify.Assert(() => Task.FromResult(form), expected);
+        }
     }
 }

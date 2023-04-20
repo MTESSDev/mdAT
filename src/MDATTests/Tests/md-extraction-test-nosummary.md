@@ -44,6 +44,7 @@ expected:
         Obj: null
     expected:
       allowAdditionalProperties: false
+      generateExpectedData: null
       data: null
     ``````
 ``````

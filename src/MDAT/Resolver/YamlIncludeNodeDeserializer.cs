@@ -26,7 +26,7 @@ namespace MDAT.Resolver
                 string fileName = scalar.Value.Replace('/', Path.DirectorySeparatorChar);
                 var extension = Path.GetExtension(fileName);
 
-                if (scalar.Tag == MdatConstants.IncludeTag || (scalar.Tag != MdatConstants.IncludeTag && (YamlExtensionRegex.IsMatch(extension) || JsonExtensionRegex.IsMatch(extension))))
+                if (scalar.Tag == MdatConstants.IncludeTag)
                 {
                     var includePath = Path.Combine(_options.DirectoryName, fileName);
                     value = ReadIncludedFile(_options.Builder, includePath, expectedType);

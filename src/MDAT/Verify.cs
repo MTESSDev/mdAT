@@ -19,7 +19,7 @@ public static class Verify
         try
         {
             var funcReturn = await functionAMocker();
-            Extensions.Assert(funcReturn, expected);
+            await Extensions.Assert(funcReturn, expected);
             return funcReturn;
         }
         catch (Exception ex)
@@ -27,7 +27,7 @@ public static class Verify
             if (ex is JsonAssertException)
                 throw;
             else
-                Extensions.Assert(ex, expected);
+                await Extensions.Assert(ex, expected);
         }
 
         return default!;

@@ -31,12 +31,7 @@ namespace MDAT
             if (testMethod == null) { throw new ArgumentNullException(nameof(testMethod)); }
 
             _filePath = _filePath.Replace("{method}", testMethod.Name.Replace("_", "-").ToLower());
-            ParsedPath = _filePath.ReplacePlatformCompatiblePath().Replace("~" + Path.DirectorySeparatorChar, $"..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}");
-
-            // Get the absolute path to the JSON file
-            ParsedPath = Path.IsPathRooted(ParsedPath)
-                    ? ParsedPath
-                    : Path.GetRelativePath(Directory.GetCurrentDirectory(), ParsedPath);
+            ParsedPath = Extensions.GetCurrentPath(_filePath, false);
 
             if (!File.Exists(ParsedPath))
             {
@@ -204,7 +199,7 @@ namespace MDAT
 
             var includeNodeDeserializerOptions = new YamlIncludeNodeDeserializerOptions
             {
-                DirectoryName = directoryName, 
+                DirectoryName = directoryName,
                 Builder = deserializer
             };
 

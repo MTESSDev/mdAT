@@ -1,12 +1,13 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Quibble.Xunit;
+using YamlDotNet.Serialization;
 
 namespace MDAT;
 
 public static class Extensions
 {
-    public static void Assert(dynamic? obj, Expected expected)
+    public static async Task Assert(dynamic? obj, Expected expected)
     {
         expected ??= new Expected();
 
@@ -24,9 +25,51 @@ public static class Extensions
             }
         }
 
+        var data = JsonConvert.SerializeObject(obj);
+
+        if (!string.IsNullOrWhiteSpace(expected.generateExpectedData))
+        {
+            var path = GetCurrentPath(expected.generateExpectedData, true);
+
+            if(path.EndsWith(".yml", StringComparison.InvariantCultureIgnoreCase))
+            {
+                var builder = new SerializerBuilder().Build();
+                var yml = builder.Serialize(obj);
+
+                await File.WriteAllTextAsync(path, yml);
+            }
+            else
+            {
+                await File.WriteAllTextAsync(path, data);
+            }
+        }
+
         JsonAssert.EqualOverrideDefault(expected!.data.ToString(),
-                                JsonConvert.SerializeObject(obj),
+                                data,
                                 new JsonDiffConfig(expected.allowAdditionalProperties));
+    }
+
+    public static string GetCurrentPath(string filePath, bool forceLocal)
+    {
+        if (forceLocal)
+        {
+            filePath = "~" + Path.DirectorySeparatorChar + AbsolutePath(filePath);
+        }
+
+        var path = filePath.ReplacePlatformCompatiblePath().Replace("~" + Path.DirectorySeparatorChar, $"..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}");
+
+        path = AbsolutePath(path);
+
+        return path;
+    }
+
+    private static string AbsolutePath(string path)
+    {
+        // Get the absolute path to the JSON file
+        path = Path.IsPathRooted(path)
+                        ? path
+                        : Path.GetRelativePath(Directory.GetCurrentDirectory(), path);
+        return path;
     }
 
     public static bool ValidateJSON(this string s)

@@ -49,6 +49,7 @@ expected:
     # Expected result
     expected:
       allowAdditionalProperties: false
+      generateExpectedData: null
       data: null
     ``````
 ``````
