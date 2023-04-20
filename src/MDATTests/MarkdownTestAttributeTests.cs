@@ -102,6 +102,26 @@ namespace MDAT.Tests
         }
 
         /// <summary>
+        /// External file include byte[] dictionary
+        /// </summary>
+        [TestMethod]
+        [MarkdownTest("~/Tests/{method}.md")]
+        public async Task External_file_byte_dictionary(Dictionary<string, byte[]> form, Expected expected)
+        {
+            _ = await Verify.Assert(() => Task.FromResult(form), expected);
+        }
+
+        /// <summary>
+        /// External file include string dictionary
+        /// </summary>
+        [TestMethod]
+        [MarkdownTest("~/Tests/{method}.md")]
+        public async Task External_file_string_dictionary(Dictionary<string, string> form, Expected expected)
+        {
+            _ = await Verify.Assert(() => Task.FromResult(form), expected);
+        }
+
+        /// <summary>
         /// Dictionary_object_object
         /// </summary>
         [TestMethod]

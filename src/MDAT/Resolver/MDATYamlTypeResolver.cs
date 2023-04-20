@@ -71,6 +71,11 @@ public sealed class MDATYamlTypeResolver : INodeTypeResolver
             }
         }
 
+        if(nodeEvent.Tag == MdatConstants.IncludeTag)
+        {
+            return true;
+        }
+
         return false;
     }
 
