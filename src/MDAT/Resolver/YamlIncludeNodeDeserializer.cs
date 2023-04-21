@@ -1,6 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 using YamlDotNet.Core;
 using YamlDotNet.Core.Events;
 using YamlDotNet.Serialization;
@@ -13,6 +11,26 @@ namespace MDAT.Resolver
         private static readonly Regex YamlExtensionRegex = new(@"^\.y[a]{0,1}ml$", RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Singleline);
 
         private readonly YamlIncludeNodeDeserializerOptions _options;
+        private DeserializerBuilder GetDeserializer()
+        {
+            DeserializerBuilder deserializer = new DeserializerBuilder()
+                .WithTypeConverter(new ByteArayConverter(), e => e.OnBottom())
+                //.WithNodeTypeResolver(resolver)
+                .WithAttemptingUnquotedStringTypeDeserialization()
+                .IgnoreUnmatchedProperties()
+                .WithTagMapping(MdatConstants.IncludeTag, typeof(IncludeRef));
+
+            var includeNodeDeserializerOptions = new YamlIncludeNodeDeserializerOptions
+            {
+                DirectoryName = _options.DirectoryName
+            };
+
+            var includeNodeDeserializer = new YamlIncludeNodeDeserializer(includeNodeDeserializerOptions);
+
+            deserializer.WithNodeDeserializer(includeNodeDeserializer, s => s.OnTop());
+
+            return deserializer;
+        } 
 
         public YamlIncludeNodeDeserializer(YamlIncludeNodeDeserializerOptions options)
         {
@@ -29,7 +47,7 @@ namespace MDAT.Resolver
                 if (scalar.Tag == MdatConstants.IncludeTag)
                 {
                     var includePath = Path.Combine(_options.DirectoryName, fileName);
-                    value = ReadIncludedFile(_options.Builder, includePath, expectedType);
+                    value = ReadIncludedFile(GetDeserializer(), includePath, expectedType);
                     parser.MoveNext();
                     return true;
                 }
@@ -55,7 +73,18 @@ namespace MDAT.Resolver
                     return File.ReadAllText(includePath).ReplaceLineEndings("\r\n");
                 }
 
-                return deserializer.Build().Deserialize(new Parser(File.OpenText(includePath)), expectedType);
+                var objYaml = deserializer.Build().Deserialize(new Parser(File.OpenText(includePath)), expectedType);
+
+                /*var json = JsonConvert.SerializeObject(objYaml);
+
+                    var personCopy =  new JsonSerializerSettings()
+                    {
+                        ContractResolver = new PrivateResolver(),
+                        ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor
+                    };
+                var jsonobj = JsonConvert.DeserializeObject(json, expectedType, personCopy);*/
+
+                return objYaml;
             }
 
             if (JsonExtensionRegex.IsMatch(extension))
@@ -88,6 +117,7 @@ namespace MDAT.Resolver
             return builder
                 .WithTagMapping(MdatConstants.IncludeTag, typeof(IncludeRef))
                 .WithNodeDeserializer(includeNodeDeserializer, s => s.OnTop())
+                .WithAttemptingUnquotedStringTypeDeserialization()
                 .Build();
         }
     }

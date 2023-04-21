@@ -72,6 +72,21 @@ namespace MDAT.Tests
         }
 
         /// <summary>
+        /// Test Exception
+        /// </summary>
+        [TestMethod]
+        [MarkdownTest("~/Tests/{method}.md")]
+        public async Task Exception_test(FormulaireWebFRW1DO form, Expected expected)
+        {
+            _ = await Verify.Assert(() => Task.FromResult(ThrowE()), expected);
+        }
+
+        private bool ThrowE()
+        {
+            throw new InvalidOperationException();
+        }
+
+        /// <summary>
         /// External file include 2
         /// </summary>
         [TestMethod]

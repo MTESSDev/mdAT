@@ -1,10 +1,22 @@
 ﻿using MDAT.Resolver;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 using Quibble.Xunit;
+using System.Reflection;
 using YamlDotNet.Serialization;
 
 namespace MDAT;
+
+public class NoResolver : DefaultContractResolver
+{
+    protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
+    {
+        JsonProperty property = base.CreateProperty(member, memberSerialization);
+        property.PropertyName = member.Name;
+        return property;
+    }
+}
 
 public static class Extensions
 {
@@ -14,19 +26,29 @@ public static class Extensions
 
         expected!.data ??= "null";
 
-        if (!expected.data.ToString()!.ValidateJSON())
+        object? finalExpectedData = expected.data;
+
+        if (expected.data is null || !expected.data.ToString()!.ValidateJSON())
         {
-            if(expected.data is string)
+            if (expected.data is string)
             {
-                expected.data = JsonConvert.SerializeObject(expected.data.ToString()!.ReplaceLineEndings("\r\n"));
+                finalExpectedData = JsonConvert.SerializeObject(expected.data.ToString()!.ReplaceLineEndings("\r\n"));
             }
             else
             {
-                expected.data = JsonConvert.SerializeObject(expected.data);
+                finalExpectedData = JsonConvert.SerializeObject(expected.data, new JsonSerializerSettings
+                {
+                    ContractResolver = new NoResolver(),
+                    Formatting = Formatting.Indented
+                });
             }
         }
 
-        var data = JsonConvert.SerializeObject(obj);
+        var data = JsonConvert.SerializeObject(obj, new JsonSerializerSettings
+        {
+            ContractResolver = new NoResolver(),
+            Formatting = Formatting.Indented
+        });
 
         if (!string.IsNullOrWhiteSpace(expected.generateExpectedData))
         {
@@ -47,7 +69,7 @@ public static class Extensions
             }
         }
 
-        JsonAssert.EqualOverrideDefault(expected!.data.ToString(),
+        JsonAssert.EqualOverrideDefault(finalExpectedData.ToString(),
                                 data,
                                 new JsonDiffConfig(expected.allowAdditionalProperties));
     }

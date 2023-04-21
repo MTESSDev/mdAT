@@ -22,5 +22,5 @@ expected:
       Other: 
         Other: 
           Other: null
-          Obj: 123
+          Obj: '123'
 ``````

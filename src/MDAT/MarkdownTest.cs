@@ -94,7 +94,7 @@ namespace MDAT
         {
             var resolver = new MDATYamlTypeResolver(testMethod);
 
-            IDeserializer deserializer = NewDeserializer(testMethod, resolver, directoryName);
+            IDeserializer deserializer = NewDeserializer(resolver, directoryName);
 
             object[]? values;
             try
@@ -190,18 +190,19 @@ namespace MDAT
             return propertyType.IsValueType ? Activator.CreateInstance(propertyType) : null;
         }
 
-        private static IDeserializer NewDeserializer(MethodInfo testMethod, INodeTypeResolver resolver, string directoryName)
+        private static IDeserializer NewDeserializer(INodeTypeResolver resolver, string directoryName)
         {
             DeserializerBuilder deserializer = new DeserializerBuilder()
-              .WithTypeConverter(new ByteArayConverter(), e=>e.OnBottom())
+              .WithTypeConverter(new ByteArayConverter(), e => e.OnBottom())
               .WithNodeTypeResolver(resolver)
               .IgnoreUnmatchedProperties()
+              .WithAttemptingUnquotedStringTypeDeserialization()
               .WithTagMapping(MdatConstants.IncludeTag, typeof(IncludeRef));
 
             var includeNodeDeserializerOptions = new YamlIncludeNodeDeserializerOptions
             {
                 DirectoryName = directoryName,
-                Builder = deserializer
+                //Builder = deserializer
             };
 
             var includeNodeDeserializer = new YamlIncludeNodeDeserializer(includeNodeDeserializerOptions);
