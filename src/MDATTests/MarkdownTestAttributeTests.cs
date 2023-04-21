@@ -244,9 +244,9 @@ namespace MDAT.Tests
         /// </summary>
         [TestMethod]
         [MarkdownTest("~/Tests/{method}.md")]
-        public async Task Output_expected(Dictionary<string, string> form, Expected expected)
+        public async Task Output_expected(Dictionary<string, string> form, byte[] bytes, Expected expected)
         {
-            _ = await Verify.Assert(() => Task.FromResult(form), expected);
+            _ = await Verify.Assert(() => Task.FromResult(new { form, bytes }), expected);
         }
     }
 }

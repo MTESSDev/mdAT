@@ -81,8 +81,8 @@ namespace MDAT
         private static IDeserializer NewDeserilizer(MethodInfo testMethod)
         {
             IDeserializer deserializer = new DeserializerBuilder()
-
               .WithNodeTypeResolver(new MDATYamlTypeResolver(testMethod))
+              .WithTypeConverter(new ByteArayConverter())
               .IgnoreUnmatchedProperties()
               .Build();
             return deserializer;

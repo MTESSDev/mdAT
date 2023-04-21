@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using MDAT.Resolver;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Quibble.Xunit;
 using YamlDotNet.Serialization;
@@ -31,9 +32,11 @@ public static class Extensions
         {
             var path = GetCurrentPath(expected.generateExpectedData, true);
 
-            if(path.EndsWith(".yml", StringComparison.InvariantCultureIgnoreCase))
+            if (path.EndsWith(".yml", StringComparison.InvariantCultureIgnoreCase))
             {
-                var builder = new SerializerBuilder().Build();
+                var builder = new SerializerBuilder()
+                    .WithTypeConverter(new ByteArayConverter())
+                    .Build();
                 var yml = builder.Serialize(obj);
 
                 await File.WriteAllTextAsync(path, yml);

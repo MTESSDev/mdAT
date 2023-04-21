@@ -193,6 +193,7 @@ namespace MDAT
         private static IDeserializer NewDeserializer(MethodInfo testMethod, INodeTypeResolver resolver, string directoryName)
         {
             DeserializerBuilder deserializer = new DeserializerBuilder()
+              .WithTypeConverter(new ByteArayConverter(), e=>e.OnBottom())
               .WithNodeTypeResolver(resolver)
               .IgnoreUnmatchedProperties()
               .WithTagMapping(MdatConstants.IncludeTag, typeof(IncludeRef));
