@@ -38,7 +38,7 @@ namespace MDAT.Tests
         [DynamicData("ReusableTestDataProperty")]
         public async Task Dynam(Params val1)
         {
-            _ = await Verify.Assert(() => Task.FromResult(val1), new Expected() { data = "{\"Test\":{\"test\":{\"test\":1}}}" });
+            _ = await Verify.Assert(() => Task.FromResult(val1), new Expected() { verify = new VerifyStep[] { new VerifyStep { data = "{\"Test\":{\"test\":{\"test\":1}}}", type = "match", jsonPath = "$" } } });
         }
 
         /// <summary>
@@ -223,15 +223,14 @@ namespace MDAT.Tests
             var guid = Guid.NewGuid();
 
             var test = new MarkdownTestAttribute($"~\\Tests\\Generated\\Generated-md-Test-{guid}.md");
-
             object value = await Verify.Assert(() =>
                                         Task.FromResult(test.GetData(null!)), new Expected()
                                         {
-                                            data = "{ " +
+                                            verify = new VerifyStep[] { new VerifyStep { data = "{ " +
                                                         "\"ClassName\":\"System.ArgumentNullException\",       " +
                                                         "\"Message\":\"Value cannot be null.\"," +
-                                                        "\"ParamName\":\"testMethod\"}",
-                                            allowAdditionalProperties = true
+                                                        "\"ParamName\":\"testMethod\"}", type = "match", jsonPath = "$", 
+                                            allowAdditionalProperties = true } },
                                         });
         }
 
@@ -262,6 +261,17 @@ namespace MDAT.Tests
         public async Task Output_expected(Dictionary<string, string> form, byte[] bytes, Expected expected)
         {
             _ = await Verify.Assert(() => Task.FromResult(new { form, bytes }), expected);
+        }
+
+
+        /// <summary>
+        /// Test jsonPath array count
+        /// </summary>
+        [TestMethod]
+        [MarkdownTest("~/Tests/{method}.md")]
+        public async Task JsonPath(Expected expected)
+        {
+            _ = await Verify.Assert(() => Task.FromResult(new { test = new string[] { "val1", "val2" } }), expected);
         }
     }
 }

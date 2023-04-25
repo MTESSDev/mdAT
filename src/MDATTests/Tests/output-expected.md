@@ -12,7 +12,9 @@ form:
   a: test
 byte: VW5pY29kZQ==
 expected:
-  allowAdditionalProperties: false
   generateExpectedData: ./Tests/Generated/output-expected.yml
-  data: {"form":{"this":"is","a":"test"},"bytes":"VW5pY29kZQ=="}
+  verify:
+  - type: match
+    allowAdditionalProperties: false
+    data: {"form":{"this":"is","a":"test"},"bytes":"VW5pY29kZQ=="}
 ``````

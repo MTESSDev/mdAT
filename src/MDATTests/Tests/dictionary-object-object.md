@@ -11,6 +11,9 @@ dict:
  el1: test
  el2: test2
 expected:
-  allowAdditionalProperties: false
-  data: {"el1":"test","el2":"test2"}
+  verify:
+    - type: match
+      jsonPath: $
+      allowAdditionalProperties: false
+      data: {"el1":"test","el2":"test2"}
 ``````

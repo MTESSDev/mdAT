@@ -35,9 +35,11 @@ form:
       Obj: null
     Obj: null
 expected:
-  allowAdditionalProperties: true
   generateExpectedData: null
-  data: 
-    ClassName: System.InvalidOperationException
-    Message: Operation is not valid due to the current state of the object.
+  verify:
+  - type: match
+    allowAdditionalProperties: true
+    data: 
+      ClassName: System.InvalidOperationException
+      Message: Operation is not valid due to the current state of the object.
 ``````

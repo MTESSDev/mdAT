@@ -13,6 +13,9 @@ dict:
        subsubkey: "F"
     subkey2: 2
 expected:
-  allowAdditionalProperties: false
-  data: {"key1":{"subkey1":{"subsubkey":"F"},"subkey2":2}}
+  verify:
+  - type: match
+    jsonPath: $
+    allowAdditionalProperties: false
+    data: {"key1":{"subkey1":{"subsubkey":"F"},"subkey2":2}}
 ``````

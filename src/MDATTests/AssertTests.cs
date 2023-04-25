@@ -23,6 +23,13 @@ namespace MDAT.Tests
                                         Task.FromResult((object)null!), (Expected)null!);
         }
 
+        [TestMethod]
+        public async Task Test_numeric()
+        {
+            object value = await Verify.Assert(() =>
+                                        Task.FromResult(2), new Expected { verify = new VerifyStep[] { new VerifyStep { type = "match", data = 2 } } });
+        }
+
         /// <summary>
         /// Run without expected obj
         /// </summary>
@@ -30,7 +37,7 @@ namespace MDAT.Tests
         public async Task Test_expected_data_is_string()
         {
             object value = await Verify.Assert(() =>
-                                        Task.FromResult("{Test!"), new Expected() { data = "{Test!" });
+                                        Task.FromResult("{Test!"), new Expected() { verify = new VerifyStep[] { new VerifyStep { data = "{Test!", type = "match", jsonPath = "$" } } });
         }
     }
 }

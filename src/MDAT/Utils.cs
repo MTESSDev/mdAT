@@ -4,6 +4,7 @@ using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using Quibble.Xunit;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using YamlDotNet.Serialization;
 
 namespace MDAT;
@@ -24,30 +25,32 @@ public static class Extensions
     {
         expected ??= new Expected();
 
-        expected!.data ??= "null";
+        if (expected!.verify is null)
+            expected!.verify = new VerifyStep[] { new VerifyStep { data = "null", jsonPath = "$", type = "match" } };
 
-        object? finalExpectedData = expected.data;
-
-        if (expected.data is null || !expected.data.ToString()!.ValidateJSON())
+        foreach (var item in expected!.verify)
         {
-            if (expected.data is string)
+            if (item.type == "match")
             {
-                finalExpectedData = JsonConvert.SerializeObject(expected.data.ToString()!.ReplaceLineEndings("\r\n"));
+                await MatchCheck(obj, expected, item);
             }
             else
             {
-                finalExpectedData = JsonConvert.SerializeObject(expected.data, new JsonSerializerSettings
-                {
-                    ContractResolver = new NoResolver(),
-                    Formatting = Formatting.Indented
-                });
+                throw new InvalidOperationException($"Invalid verify type '{item.type}'.");
             }
         }
+    }
+
+    private static async Task MatchCheck(dynamic obj, Expected expected, VerifyStep item)
+    {
+        object? finalExpectedData = item.data;
+
+        finalExpectedData = DataAdapter(item.data, finalExpectedData);
 
         var data = JsonConvert.SerializeObject(obj, new JsonSerializerSettings
         {
             ContractResolver = new NoResolver(),
-            Formatting = Formatting.Indented
+            Formatting = Formatting.Indented,
         });
 
         if (!string.IsNullOrWhiteSpace(expected.generateExpectedData))
@@ -69,9 +72,76 @@ public static class Extensions
             }
         }
 
-        JsonAssert.EqualOverrideDefault(finalExpectedData.ToString(),
-                                data,
-                                new JsonDiffConfig(expected.allowAdditionalProperties));
+        JToken linq = JToken.Parse(data);
+
+        Regex regex = new Regex(@"^(?<jsonPath>.+?)(?<last>\.length\(\))?\r?$");
+
+        Match match = regex.Match(item.jsonPath);
+
+        var tokens = linq.SelectTokens(match.Groups[1].Value);
+
+        string? finalData;
+
+        if (match.Groups[2].Success)
+        {
+            switch (match.Groups[2].Value)
+            {
+                case ".length()":
+                    if (tokens.Count() == 1)
+                        if (tokens.FirstOrDefault()!.Type == JTokenType.String)
+                            finalData = tokens.ToString()!.Length.ToString();
+                        else
+                            finalData = tokens.Children().Count().ToString();
+                    else
+                        finalData = tokens.Count().ToString();
+                    break;
+                default:
+                    throw new InvalidOperationException($"Invalid verb '{match.Groups[2].Value}'");
+            }
+        }
+        else
+        {
+            if (tokens.Count() == 1)
+                finalData = HandleValue(tokens?.FirstOrDefault());
+            else
+                finalData = HandleValue(JToken.FromObject(tokens));
+
+            finalData = DataAdapter(finalData, finalData)?.ToString();
+        }
+
+        JsonAssert.EqualOverrideDefault(finalExpectedData?.ToString(),
+                                finalData,
+                                new JsonDiffConfig(item.allowAdditionalProperties));
+    }
+
+    private static string? HandleValue(JToken? jToken)
+    {
+        if (jToken is null) return null;
+
+        if (jToken.Type == JTokenType.Null) return null;
+
+        return jToken.ToString();
+    }
+
+    private static object? DataAdapter(object? data, object? finalData)
+    {
+        if (data is null || !data.ToString()!.ValidateJSON())
+        {
+            if (data is string)
+            {
+                finalData = JsonConvert.SerializeObject(data.ToString()!.ReplaceLineEndings("\r\n"));
+            }
+            else
+            {
+                finalData = JsonConvert.SerializeObject(data, new JsonSerializerSettings
+                {
+                    ContractResolver = new NoResolver(),
+                    Formatting = Formatting.Indented
+                });
+            }
+        }
+
+        return finalData;
     }
 
     public static string GetCurrentPath(string filePath, bool forceLocal)

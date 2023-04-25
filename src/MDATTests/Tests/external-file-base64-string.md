@@ -9,6 +9,8 @@ Description
 ``````yaml
 form: !include Hello World.pdf
 expected:
-  allowAdditionalProperties: false
-  data: !include Hello World.pdf
+  verify:
+  - type: match
+    allowAdditionalProperties: false
+    data: !include Hello World.pdf
 ``````
