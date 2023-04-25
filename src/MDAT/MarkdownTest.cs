@@ -64,7 +64,7 @@ namespace MDAT
                         && fbc.ClosingFencedCharCount == 6
                         && (fbc.Info?.ToLower() == "yaml" || fbc.Info?.ToLower() == "yml"))
                 {
-                    var doc = string.Join("\r\n", fbc.Lines);
+                    var doc = string.Join("\n", fbc.Lines);
 
                     if (string.IsNullOrWhiteSpace(doc))
                         continue;
@@ -108,7 +108,7 @@ namespace MDAT
             catch (YamlException ex)
             {
                 var invalidName = testMethod.GetParameters()[resolver.Position - 1];
-                throw new InternalTestFailureException($"Method '{testMethod.Name}' exception on '{invalidName.Name}' parameter.'\r\n{ex.Message}\r\n{ex.InnerException?.Message}", ex);
+                throw new InternalTestFailureException($"Method '{testMethod.Name}' exception on '{invalidName.Name}' parameter.'\n{ex.Message}\n{ex.InnerException?.Message}", ex);
             }
 
             return values;
@@ -135,18 +135,18 @@ namespace MDAT
 
                 var strDetails = paramsDetails is { }
                                         && paramsDetails.Value.Text is { }
-                                        ? $"# {paramsDetails.Value.Text}\r\n"
+                                        ? $"# {paramsDetails.Value.Text}\n"
                                         : "";
 
-                code += $"{strDetails}{item.Name}:\r\n{DescribeTypeOfObject(item.ParameterType, "  ")}";
+                code += $"{strDetails}{item.Name}:\n{DescribeTypeOfObject(item.ParameterType, "  ")}";
             }
 
             var summary = methodComments is { }
                             && !string.IsNullOrWhiteSpace(methodComments.Summary)
-                            ? $"\r\n\r\n> {methodComments?.Summary.ReplaceLineEndings("\\\r\n")}"
+                            ? $"\n\n> {methodComments?.Summary.ReplaceLineEndings("\\\n")}"
                             : "";
 
-            File.WriteAllText(ParsedPath, $"# {testMethod.Name}{summary}\r\n\r\n## Case 1\r\n\r\nDescription\r\n\r\n``````yaml\r\n{code}``````");
+            File.WriteAllText(ParsedPath, $"# {testMethod.Name}{summary}\n\n## Case 1\n\nDescription\n\n``````yaml\n{code}``````");
         }
 
         static string? DescribeTypeOfObject(Type type, string indent, int pos = 0)
@@ -168,7 +168,7 @@ namespace MDAT
 
                     var innerObj = DescribeTypeOfObject(pi.PropertyType, indent + "  ", pos);
 
-                    obj += $"{indent}{pi.Name}: {(string.IsNullOrEmpty(innerObj) ? GetDefaultValue(def) : "\r\n" + innerObj)}";
+                    obj += $"{indent}{pi.Name}: {(string.IsNullOrEmpty(innerObj) ? GetDefaultValue(def) : "\n" + innerObj)}";
                 }
             }
 
@@ -177,7 +177,7 @@ namespace MDAT
 
         private static string GetDefaultValue(object? def)
         {
-            return def is { } ? new Serializer().Serialize(def).ReplaceLineEndings("\r\n") : "null\r\n";
+            return def is { } ? new Serializer().Serialize(def).ReplaceLineEndings("\n") : "null\n";
         }
 
         public static object? GetDefaultValueForProperty(PropertyInfo property)

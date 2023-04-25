@@ -50,7 +50,7 @@ public static class Extensions
         var data = JsonConvert.SerializeObject(obj, new JsonSerializerSettings
         {
             ContractResolver = new NoResolver(),
-            Formatting = Formatting.Indented,
+            Formatting = Formatting.Indented
         });
 
         if (!string.IsNullOrWhiteSpace(expected.generateExpectedData))
@@ -129,7 +129,7 @@ public static class Extensions
         {
             if (data is string)
             {
-                finalData = JsonConvert.SerializeObject(data.ToString()!.ReplaceLineEndings("\r\n"));
+                finalData = JsonConvert.SerializeObject(data.ToString()!.ReplaceLineEndings("\n"));
             }
             else
             {

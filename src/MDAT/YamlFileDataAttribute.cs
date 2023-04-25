@@ -59,7 +59,7 @@ namespace MDAT
 
                     IDeserializer deserializer = NewDeserilizer(testMethod);
 
-                    var ggs = deserializer.Deserialize<Dictionary<string, object>>("---\r\n" + doc);
+                    var ggs = deserializer.Deserialize<Dictionary<string, object>>("---\n" + doc);
 
                     if (ggs is null) continue;
 

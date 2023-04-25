@@ -70,7 +70,7 @@ namespace MDAT.Resolver
             {
                 if (expectedType == typeof(string))
                 {
-                    return File.ReadAllText(includePath).ReplaceLineEndings("\r\n");
+                    return File.ReadAllText(includePath).ReplaceLineEndings("\n");
                 }
 
                 var objYaml = deserializer.Build().Deserialize(new Parser(File.OpenText(includePath)), expectedType);
@@ -91,9 +91,9 @@ namespace MDAT.Resolver
             {
                 if (expectedType == typeof(string))
                 {
-                    return File.ReadAllText(includePath).ReplaceLineEndings("\r\n");
+                    return File.ReadAllText(includePath).ReplaceLineEndings("\n");
                 }
-                return File.ReadAllText(includePath).ReplaceLineEndings("\r\n");
+                return File.ReadAllText(includePath).ReplaceLineEndings("\n");
             }
 
             return Convert.ToBase64String(File.ReadAllBytes(includePath));
