@@ -20,7 +20,8 @@ public static class Verify
         {
             var funcReturn = await functionAMocker();
             await Extensions.Assert(funcReturn, expected);
-            return funcReturn;
+            data = fonctionAMocker;
+            return fonctionAMocker;
         }
         catch (Exception ex)
         {
