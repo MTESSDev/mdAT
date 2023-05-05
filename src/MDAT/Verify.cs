@@ -16,19 +16,34 @@ public static class Verify
 
     public async static Task<T> Assert<T>(Func<Task<T>> functionAMocker, Expected expected, [CallerMemberName] string callerName = "")
     {
+        object? data = default(T);
+
         try
         {
             var funcReturn = await functionAMocker();
             await Extensions.Assert(funcReturn, expected);
-            data = fonctionAMocker;
-            return fonctionAMocker;
+            data = funcReturn;
+
+            return funcReturn;
         }
         catch (Exception ex)
         {
+            data = ex;
             if (ex is JsonAssertException)
                 throw;
             else
                 await Extensions.Assert(ex, expected);
+        }
+        finally
+        {
+            var strData = JsonConvert.SerializeObject(data, new JsonSerializerSettings
+            {
+                ContractResolver = new NoResolver(),
+                Formatting = Formatting.Indented
+            });
+
+            Console.WriteLine("Actual raw:");
+            Console.WriteLine(strData);
         }
 
         return default!;
