@@ -16,13 +16,13 @@ public static class Verify
 
     public async static Task<T> Assert<T>(Func<Task<T>> functionAMocker, Expected expected, [CallerMemberName] string callerName = "")
     {
-        object? data = default(T);
+        object? data = null;
 
         try
         {
             var funcReturn = await functionAMocker();
-            await Extensions.Assert(funcReturn, expected);
             data = funcReturn;
+            await Extensions.Assert(funcReturn, expected);
 
             return funcReturn;
         }
