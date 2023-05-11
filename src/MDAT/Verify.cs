@@ -28,11 +28,13 @@ public static class Verify
         }
         catch (Exception ex)
         {
-            data = ex;
             if (ex is JsonAssertException)
                 throw;
             else
+            {
+                data ??= ex;
                 await Extensions.Assert(ex, expected);
+            }
         }
         finally
         {
