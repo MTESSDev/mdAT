@@ -1,9 +1,7 @@
 ﻿using MDATTests;
 using MDATTests.Models;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq.Expressions;
-using System.Reflection;
+using Moq;
 
 namespace MDAT.Tests
 {
@@ -229,7 +227,7 @@ namespace MDAT.Tests
                                             verify = new VerifyStep[] { new VerifyStep { data = "{ " +
                                                         "\"ClassName\":\"System.ArgumentNullException\",       " +
                                                         "\"Message\":\"Value cannot be null.\"," +
-                                                        "\"ParamName\":\"testMethod\"}", type = "match", jsonPath = "$", 
+                                                        "\"ParamName\":\"testMethod\"}", type = "match", jsonPath = "$",
                                             allowAdditionalProperties = true } },
                                         });
         }
@@ -272,6 +270,64 @@ namespace MDAT.Tests
         public async Task JsonPath(Expected expected)
         {
             _ = await Verify.Assert(() => Task.FromResult(new { test = new string[] { "val1", "val2" } }), expected);
+        }
+
+        /// <summary>
+        /// Test jsonPath array count
+        /// </summary>
+        [TestMethod]
+        [MarkdownTest("~/Tests/{method}.md")]
+        public async Task TestObjectOrException(
+            ObjectOrException<FormulaireWebFRW1DO> formulaireWebFRW1DO,
+            Expected expected)
+        {
+            var mock = new Mock<IFormulaireWebFRW1DO>();
+
+            mock.Setup(e => e.ReturnVal()).ReturnsOrThrows(formulaireWebFRW1DO);
+
+            _ = await Verify.Assert(() => Task.FromResult(new Test().ReturnTest(mock.Object)), expected);
+        }
+
+        /// <summary>
+        /// Test jsonPath array count
+        /// </summary>
+        [TestMethod]
+        [MarkdownTest("~/Tests/{method}.md")]
+        public async Task TestObjectOrExceptionAsync(
+            ObjectOrException<FormulaireWebFRW1DO> formulaireWebFRW1DO,
+            Expected expected)
+        {
+            var mock = new Mock<IFormulaireWebFRW1DO>();
+
+            _ = mock.Setup(e => e.ReturnValAsync()).ReturnsOrThrowsAsync(formulaireWebFRW1DO);
+
+            _ = await Verify.Assert(async () => await new Test().ReturnTestAsync(mock.Object), expected);
+        }
+
+        /// <summary>
+        /// Test class
+        /// </summary>
+        public class Test
+        {
+            /// <summary>
+            /// Return Test
+            /// </summary>
+            /// <param name="form"></param>
+            /// <returns></returns>
+            public FormulaireWebFRW1DO ReturnTest(IFormulaireWebFRW1DO form)
+            {
+                return form.ReturnVal();
+            }
+
+            /// <summary>
+            /// Return Test
+            /// </summary>
+            /// <param name="form"></param>
+            /// <returns></returns>
+            public async Task<FormulaireWebFRW1DO> ReturnTestAsync(IFormulaireWebFRW1DO form)
+            {
+                return await form.ReturnValAsync();
+            }
         }
     }
 }
