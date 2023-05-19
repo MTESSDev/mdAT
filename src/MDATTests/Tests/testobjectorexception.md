@@ -9,9 +9,8 @@ Description
 ``````yaml
 formulaireWebFRW1DO:
   Exception: 
-    Name: DataMisalignedException
+    ClassName: System.DataMisalignedException
     ObjectName: null
-    ClassName: null
     Message: Test Crashed
     ParamName: null
 expected:

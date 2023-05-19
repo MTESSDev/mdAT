@@ -9,9 +9,8 @@ Description
 ``````yaml
 formulaireWebFRW1DO:
   Exception: 
-    Name: Exception
+    ClassName: System.Exception
     ObjectName: null
-    ClassName: null
     Message: Test Crashed
     ParamName: null
 expected:
