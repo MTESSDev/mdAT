@@ -48,6 +48,21 @@ namespace MDAT
             return setup.ReturnsAsync(objectOrException.Value!);
         }
 
+        public static object ReturnsOrThrowsAsync<TMock, TResult>(
+                    this IReturnsThrows<TMock, Task<TResult>> setup,
+                    ObjectOrException<TResult> objectOrException)
+                    where TMock : class
+        {
+            if (objectOrException.Exception is { })
+            {
+                var exceptionReturn = ResolveException(objectOrException.Exception);
+
+                return setup.Throws(exceptionReturn);
+            }
+
+            return setup.ReturnsAsync(objectOrException.Value!);
+        }
+
         private static Exception ResolveException(TestException testException) =>
          testException.ClassName switch
          {
@@ -133,7 +148,7 @@ namespace MDAT
              "System.IO.InvalidDataException" => new InvalidDataException(message: testException.Message),
              "System.IO.IOException" => new IOException(message: testException.Message),
              "System.IO.PathTooLongException" => new PathTooLongException(message: testException.Message),
-             _ => throw new NotImplementedException("Cannot find your Exception name in list."),
+             _ => throw new NotImplementedException($"Cannot find your Exception name '{testException.ClassName}' in list."),
              //"PipeException" => new PipeException(),
          };
     }
