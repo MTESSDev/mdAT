@@ -1,5 +1,67 @@
 ![Code Coverage](https://img.shields.io/badge/Code%20Coverage-92%25-success?style=flat)
 
+# mdAT - Tests automatiques en Markdown
+
+``mdAT`` est une bibliothèque simple qui remplace les tests unitaires et d'intégration. Avec ``mdAT``, les développeurs peuvent écrire des tests unitaires de manière traditionnelle, mais sans avoir besoin d'ajouter de nombreuses données de test à partir de fichiers JSON, XML, YAML, ou d'utiliser manuellement ``[InlideData]`` avec des objets JSON échappés.
+
+Pour utiliser mdAT, suivez ces étapes :
+
+1. Créez un test MSTestV2 normal avec ``[TestClass]``, ``[TestMethod]``.
+2. Codez votre test unitaire de manière traditionnelle en utilisant Moq, si nécessaire, puis appelez la méthode que vous souhaitez tester.
+3. Ajoutez tous les paramètres souhaités à votre méthode de test, ils seront exposés pour être remplacés par le fichier de test Markdown de ``mdAT``.
+4. Ajoutez ``[MarkdownTest("~/Tests/{method}.md")]`` avec votre dossier ``Tests`` comme référentiel de cas (laissez-le vide au départ).
+5. Assurez-vous d'entourer votre méthode testée avec ``Verify.Assert()``, cela validera automatiquement le résultat JSON attendu, même s'il s'agit d'une exception.
+6. Votre fichier de test ``.md`` sera généré automatiquement lors de la première exécution.
+Modifiez votre fichier ``.md`` comme vous le souhaitez.
+7. Profitez-en !
+
+
+````csharp
+[TestClass]
+public class Calc
+{
+    [TestMethod]
+    [MarkdownTest("~/Tests/{method}.md")]
+    public async Task Add(int val1, int val2, string expected)
+    {
+        _ = await Verify.Assert(() => Task.FromResult(Add(val1, val2)), expected);
+    }
+
+    // Cas d'utilisation fictif
+    public static int Add(int val1, int val2)
+    {
+        return val1 + val2;
+    }
+}
+````
+
+Tous les cas de test peuvent être stockés dans un seul fichier Markdown :
+
+```````md
+# Test de la méthode Add
+
+Cas de test simple pour des tests d'addition.
+
+## Cas 1
+
+Essayons une simple addition `1 + 1` avec un résultat attendu de `2`
+
+``````yaml
+val1: 1
+val2: 1
+expected: 2
+``````
+
+## Case 2
+``````yaml
+val1: 212
+val2: 2444
+expected: 2656
+``````
+```````
+
+Avec `mdAT`, les analystes et les développeurs peuvent travailler ensemble avec une source unique de tests, et les mainteneurs peuvent modifier et valider tous les tests localement ou sur un serveur de build.
+
 # mdAT - Markdown Auto-Tests
 
 ``mdAT`` is a simple library that replaces unit and integration tests. With ``mdAT``, developers can write unit tests in the traditional way, but without the need to add many test data from JSON, XML, YAML files, or use manual ``[InlideData]`` with escaped JSON object.
