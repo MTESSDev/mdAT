@@ -49,14 +49,20 @@ Essayons une simple addition `1 + 1` avec un résultat attendu de `2`
 ``````yaml
 val1: 1
 val2: 1
-expected: 2
+expected: 
+  verify:
+   - type: match
+     data: 2
 ``````
 
 ## Case 2
 ``````yaml
 val1: 212
 val2: 2444
-expected: 2656
+expected: 
+  verify:
+   - type: match
+     data: 2656
 ``````
 ```````
 
@@ -110,14 +116,20 @@ Let's try simple `1 + 1` expected to return `2`
 ``````yaml
 val1: 1
 val2: 1
-expected: 2
+expected: 
+  verify:
+   - type: match
+     data: 2
 ``````
 
 ## Case 2
 ``````yaml
 val1: 212
 val2: 2444
-expected: 2656
+expected: 
+  verify:
+   - type: match
+     data: 2656
 ``````
 ```````
 
