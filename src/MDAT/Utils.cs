@@ -4,6 +4,7 @@ using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using Quibble.Xunit;
 using System.Reflection;
+using System.Text;
 using System.Text.RegularExpressions;
 using YamlDotNet.Serialization;
 
@@ -215,5 +216,36 @@ public static class Extensions
         }
 
         return dict;
+    }
+
+    public static string ToKebabCase(this string text)
+    {
+        if (text == null)
+        {
+            throw new ArgumentNullException(nameof(text));
+        }
+        if (text.Length < 2)
+        {
+            return text;
+        }
+
+        text = text.Replace("_", "-");
+
+        var sb = new StringBuilder();
+        sb.Append(char.ToLowerInvariant(text[0]));
+        for (int i = 1; i < text.Length; ++i)
+        {
+            char c = text[i];
+            if (char.IsUpper(c))
+            {
+                sb.Append('-');
+                sb.Append(char.ToLowerInvariant(c));
+            }
+            else
+            {
+                sb.Append(c);
+            }
+        }
+        return sb.ToString().Replace("--", "-");
     }
 }

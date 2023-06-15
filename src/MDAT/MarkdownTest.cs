@@ -8,6 +8,7 @@ using System.ComponentModel;
 using YamlDotNet.Core;
 using LoxSmoke.DocXml;
 using Xunit.Sdk;
+using System.Collections;
 
 namespace MDAT
 {
@@ -30,7 +31,7 @@ namespace MDAT
         {
             if (testMethod == null) { throw new ArgumentNullException(nameof(testMethod)); }
 
-            _filePath = _filePath.Replace("{method}", testMethod.Name.Replace("_", "-").ToLower());
+            _filePath = _filePath.Replace("{method}", testMethod.Name.ToKebabCase().ToLower());
             ParsedPath = Extensions.GetCurrentPath(_filePath, false);
 
             if (!File.Exists(ParsedPath))
@@ -69,7 +70,7 @@ namespace MDAT
                     if (string.IsNullOrWhiteSpace(doc))
                         continue;
 
-                    var values = ExtractTest(testMethod, doc, Path.GetDirectoryName(ParsedPath));
+                    var values = ExtractTest(testMethod, doc, Path.GetDirectoryName(ParsedPath)!);
 
                     displayNames.Add(values.GetHashCode(), "_" + string.Join("_", headings.Where(s => !string.IsNullOrWhiteSpace(s))));
 
@@ -120,6 +121,7 @@ namespace MDAT
 
             string directoryPath = testMethod.DeclaringType!.Assembly.Location;
             string xmlFilePath = directoryPath.Replace(".dll", ".xml");
+
             if (File.Exists(xmlFilePath))
             {
                 DocXmlReader reader = new DocXmlReader(xmlFilePath);
@@ -130,7 +132,6 @@ namespace MDAT
 
             foreach (var item in testMethod.GetParameters())
             {
-
                 var paramsDetails = methodComments?.Parameters.Where(e => e.Name == item.Name).FirstOrDefault();
 
                 var strDetails = paramsDetails is { }
@@ -158,7 +159,6 @@ namespace MDAT
 
             string? obj = null;
 
-            // is a custom class type? describe it too
             if (type.IsClass && !type.FullName!.StartsWith("System."))
             {
                 PropertyInfo[] propertyInfos = type.GetProperties();
@@ -171,6 +171,23 @@ namespace MDAT
                     obj += $"{indent}{pi.Name}: {(string.IsNullOrEmpty(innerObj) ? GetDefaultValue(def) : "\n" + innerObj)}";
                 }
             }
+            else if (type.Name.StartsWith("IEnumerable"))
+            {
+                PropertyInfo[] propertyInfos = type.GetGenericArguments()[0].GetProperties();
+
+                var premier = true;
+
+                foreach (PropertyInfo pi in propertyInfos)
+                {
+                    var def = GetDefaultValueForProperty(pi);
+
+                    var innerObj = DescribeTypeOfObject(pi.PropertyType, indent + "    ", pos);
+
+                    obj += $"{indent}{(premier ? "- " : "  ")}{pi.Name}: {(string.IsNullOrEmpty(innerObj) ? GetDefaultValue(def) : "\n" + innerObj)}";
+                    premier = false;
+                }
+            }
+
 
             return obj;
         }

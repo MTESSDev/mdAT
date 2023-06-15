@@ -23,7 +23,7 @@ namespace MDAT
                         ObjectOrException<TResult> objectOrException)
             where TMock : class
         {
-            if (objectOrException.Exception is { })
+            if (objectOrException.Exception is { } && !string.IsNullOrWhiteSpace(objectOrException.Exception.ClassName))
             {
                 var exceptionReturn = ResolveException(objectOrException.Exception);
 
@@ -38,7 +38,7 @@ namespace MDAT
                 ObjectOrException<TResult> objectOrException)
                 where TMock : class
         {
-            if (objectOrException.Exception is { })
+            if (objectOrException.Exception is { } && !string.IsNullOrWhiteSpace(objectOrException.Exception.ClassName))
             {
                 var exceptionReturn = ResolveException(objectOrException.Exception);
 
@@ -53,7 +53,7 @@ namespace MDAT
                     ObjectOrException<TResult> objectOrException)
                     where TMock : class
         {
-            if (objectOrException.Exception is { })
+            if (objectOrException.Exception is { } && !string.IsNullOrWhiteSpace(objectOrException.Exception.ClassName))
             {
                 var exceptionReturn = ResolveException(objectOrException.Exception);
 

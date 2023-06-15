@@ -50,7 +50,12 @@ expected:
           Obj: null
       # Expected result
       expected:
+        name: null
         generateExpectedData: null
-        verify: null
+        verify: 
+          - type: match
+            jsonPath: $
+            allowAdditionalProperties: false
+            data: null
       ``````
 ``````

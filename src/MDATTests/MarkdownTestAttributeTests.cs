@@ -3,6 +3,8 @@ using MDATTests.Models;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
+//[assembly: TestDataSourceDiscovery(TestDataSourceDiscoveryOption.DuringExecution)]
+
 namespace MDAT.Tests
 {
     /// <summary>
@@ -47,6 +49,11 @@ namespace MDAT.Tests
         public async Task Md1(int val1, int val2, string expected)
         {
             _ = await Verify.Assert(() => Task.FromResult(Utils.Calculer(val1, val2)), expected);
+        }
+
+        private async Task Md2(ObjectOrException<IEnumerable<FormulaireWebFRW1DO>> formList)
+        {
+            await Task.Delay(1);
         }
 
         /// <summary>
@@ -209,6 +216,22 @@ namespace MDAT.Tests
 
             object value = await Verify.Assert(() =>
                                         Task.FromResult(test.GetDisplayName(method, tests.LastOrDefault())!), expected);
+        }
+
+        /// <summary>
+        /// Test object deserialization 
+        /// </summary>
+        [TestMethod]
+        [MarkdownTest("~\\Tests\\{method}.md")]
+        public async Task Test_object_deserialization(Expected expected)
+        {
+            var test = new MarkdownTestAttribute($"~\\Tests\\test-output-test-object-deserialization.md");
+            var method = Utils.GetMethodInfo(() => Md2);
+
+            var tests = test.GetData(method);
+
+            object value = await Verify.Assert(() =>
+                                        Task.FromResult(File.ReadAllText(test.ParsedPath)), expected);
         }
 
         /// <summary>

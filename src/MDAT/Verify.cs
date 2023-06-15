@@ -42,7 +42,7 @@ public static class Verify
                 Formatting = Formatting.Indented
             });
 
-            Console.WriteLine("Actual raw:");
+            Console.WriteLine($"Actual raw for \"{expected?.name ?? functionAMocker.Method.ReturnParameter.ParameterType.GetGenericArguments()[0].Name}\":");
             Console.WriteLine(strData);
         }
 
