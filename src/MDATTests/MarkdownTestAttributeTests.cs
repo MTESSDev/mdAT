@@ -328,6 +328,18 @@ namespace MDAT.Tests
         }
 
         /// <summary>
+        /// Test object deserialization 
+        /// </summary>
+        [TestMethod]
+        [MarkdownTest("~\\Tests\\{method}.md")]
+        public async Task Test_keypairvalues(List<KeyValuePair<string, string>> input, Expected expected)
+        {
+
+            object value = await Verify.Assert(() =>
+                                        Task.FromResult(input), expected);
+        }
+
+        /// <summary>
         /// Test class
         /// </summary>
         public class Test

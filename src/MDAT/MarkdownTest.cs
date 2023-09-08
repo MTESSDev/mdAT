@@ -212,6 +212,7 @@ namespace MDAT
             DeserializerBuilder deserializer = new DeserializerBuilder()
               .WithTypeConverter(new ByteArayConverter(), e => e.OnBottom())
               .WithNodeTypeResolver(resolver)
+              .WithNodeDeserializer(new KeyValuePairNodeDeserializer())
               .IgnoreUnmatchedProperties()
               .WithAttemptingUnquotedStringTypeDeserialization()
               .WithTagMapping(MdatConstants.IncludeTag, typeof(IncludeRef));
