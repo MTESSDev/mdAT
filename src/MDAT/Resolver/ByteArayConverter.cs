@@ -19,6 +19,8 @@ namespace MDAT.Resolver
         {
             var value = parser.Consume<Scalar>().Value;
 
+            if (string.IsNullOrWhiteSpace(value) || value.Equals("null", StringComparison.InvariantCultureIgnoreCase)) return null;
+
             if (type == typeof(byte[]))
             {
                 return Convert.FromBase64String(value);

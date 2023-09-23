@@ -2,6 +2,8 @@
 using MDATTests.Models;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+using System;
+using static MDAT.Tests.MarkdownTestAttributeTests;
 
 //[assembly: TestDataSourceDiscovery(TestDataSourceDiscoveryOption.DuringExecution)]
 
@@ -107,6 +109,16 @@ namespace MDAT.Tests
         [TestMethod]
         [MarkdownTest("~/Tests/{method}.md")]
         public async Task External_file_base64(byte[] form, Expected expected)
+        {
+            _ = await Verify.Assert(() => Task.FromResult(form), expected);
+        }
+
+        /// <summary>
+        /// Nullable byte[]
+        /// </summary>
+        [TestMethod]
+        [MarkdownTest("~/Tests/{method}.md")]
+        public async Task Nullable_byte_array(byte[]? form, Expected expected)
         {
             _ = await Verify.Assert(() => Task.FromResult(form), expected);
         }
