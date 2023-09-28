@@ -53,6 +53,17 @@ namespace MDAT.Tests
             _ = await Verify.Assert(() => Task.FromResult(Utils.Calculer(val1, val2)), expected);
         }
 
+        /// <summary>
+        /// Test JustME :)
+        /// </summary>
+        [TestMethod]
+        [MarkdownTest("~/Tests/test-justme.md")]
+        public async Task Md_Justme(int val1, int val2, string expected)
+        {
+            _ = await Verify.Assert(() => Task.FromResult(Utils.Calculer(val1, val2)), expected);
+        }
+
+
         private async Task Md2(ObjectOrException<IEnumerable<FormulaireWebFRW1DO>> formList)
         {
             await Task.Delay(1);

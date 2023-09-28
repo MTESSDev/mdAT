@@ -54,6 +54,7 @@ namespace MDAT
             string?[] headings = new string?[] { null, null, null, null, null, null };
 
             List<object[]> to = new();
+            List<object[]> toSelected = new();
 
             foreach (var info in mdFile)
             {
@@ -74,11 +75,18 @@ namespace MDAT
 
                     displayNames.Add(values.GetHashCode(), "_" + string.Join("_", headings.Where(s => !string.IsNullOrWhiteSpace(s))));
 
-                    to.Add(values);
+                    if (fbc.Arguments is { }
+                            && fbc.Arguments.Contains("selected", StringComparison.InvariantCultureIgnoreCase))
+                        toSelected.Add(values);
+                    else
+                        to.Add(values);
                 }
             }
 
-            return to;
+            if (toSelected.Any())
+                return toSelected;
+            else
+                return to;
         }
 
         private static void SetHeadings(string?[] heading, HeadingBlock add)

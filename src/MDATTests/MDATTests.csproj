@@ -9,6 +9,7 @@
   </PropertyGroup>
   
   <ItemGroup>
+    <None Remove="Tests\test-justme.md" />
     <None Remove="Tests\test.md" />
     <None Remove="Tests\test.yaml" />
   </ItemGroup>
@@ -28,6 +29,9 @@
 
 
   <ItemGroup>
+    <Page Include="Tests\test-justme.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Page>
     <Page Include="Tests\test.md">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Page>
