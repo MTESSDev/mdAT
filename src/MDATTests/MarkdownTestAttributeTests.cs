@@ -64,6 +64,17 @@ namespace MDAT.Tests
         }
 
 
+        /// <summary>
+        /// Test skip
+        /// </summary>
+        [TestMethod]
+        [MarkdownTest("~/Tests/test-skip.md")]
+        public async Task Md_Skip(int val1, int val2, string expected)
+        {
+            _ = await Verify.Assert(() => Task.FromResult(Utils.Calculer(val1, val2)), expected);
+        }
+
+
         private async Task Md2(ObjectOrException<IEnumerable<FormulaireWebFRW1DO>> formList)
         {
             await Task.Delay(1);

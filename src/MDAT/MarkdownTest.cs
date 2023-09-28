@@ -71,12 +71,14 @@ namespace MDAT
                     if (string.IsNullOrWhiteSpace(doc))
                         continue;
 
+                    if (fbc.Arguments is { } && fbc.Arguments.Contains("skipped", StringComparison.InvariantCultureIgnoreCase))
+                        continue;
+
                     var values = ExtractTest(testMethod, doc, Path.GetDirectoryName(ParsedPath)!);
 
                     displayNames.Add(values.GetHashCode(), "_" + string.Join("_", headings.Where(s => !string.IsNullOrWhiteSpace(s))));
 
-                    if (fbc.Arguments is { }
-                            && fbc.Arguments.Contains("selected", StringComparison.InvariantCultureIgnoreCase))
+                    if (fbc.Arguments is { } && fbc.Arguments.Contains("selected", StringComparison.InvariantCultureIgnoreCase))
                         toSelected.Add(values);
                     else
                         to.Add(values);
