@@ -52,4 +52,10 @@
     <Folder Include="Tests\Generated\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Tests\date-only.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

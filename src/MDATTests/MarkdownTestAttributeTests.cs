@@ -205,6 +205,7 @@ namespace MDAT.Tests
             _ = await Verify.Assert(() => Task.FromResult(Utils.CrashExceptionCheck(val1, val2)), expected);
         }
 
+
         /// <summary>
         /// Simple summary test for validation
         /// With multiline
