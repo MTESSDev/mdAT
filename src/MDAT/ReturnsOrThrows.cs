@@ -4,6 +4,7 @@
 using System;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Moq;
 using Moq.Language;
@@ -33,20 +34,6 @@ namespace MDAT
             return setup.Returns(objectOrException.Value!);
         }
 
-        public static object ReturnsOrThrowsAsync<TMock, TResult>(
-                this ISetup<TMock, Task<TResult>> setup,
-                ObjectOrException<TResult> objectOrException)
-                where TMock : class
-        {
-            if (objectOrException.Exception is { } && !string.IsNullOrWhiteSpace(objectOrException.Exception.ClassName))
-            {
-                var exceptionReturn = ResolveException(objectOrException.Exception);
-
-                return setup.Throws(exceptionReturn);
-            }
-
-            return setup.ReturnsAsync(objectOrException.Value!);
-        }
 
         public static object ReturnsOrThrowsAsync<TMock, TResult>(
                     this IReturnsThrows<TMock, Task<TResult>> setup,
@@ -63,6 +50,7 @@ namespace MDAT
             return setup.ReturnsAsync(objectOrException.Value!);
         }
 
+        [ExcludeFromCodeCoverage]
         private static Exception ResolveException(TestException testException) =>
          testException.ClassName switch
          {

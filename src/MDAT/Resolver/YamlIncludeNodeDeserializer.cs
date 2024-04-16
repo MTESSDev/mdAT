@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Text.RegularExpressions;
 using YamlDotNet.Core;
 using YamlDotNet.Core.Events;
 using YamlDotNet.Serialization;
@@ -100,28 +101,7 @@ namespace MDAT.Resolver
         }
     }
 
-    internal static class IncludeNodeDeserializerBuilder
-    {
-
-        public static IDeserializer Build(string directoryName)
-        {
-            var builder = new DeserializerBuilder();
-
-            var includeNodeDeserializerOptions = new YamlIncludeNodeDeserializerOptions
-            {
-                DirectoryName = directoryName
-            };
-
-            var includeNodeDeserializer = new YamlIncludeNodeDeserializer(includeNodeDeserializerOptions);
-
-            return builder
-                .WithTagMapping(MdatConstants.IncludeTag, typeof(IncludeRef))
-                .WithNodeDeserializer(includeNodeDeserializer, s => s.OnTop())
-                .WithAttemptingUnquotedStringTypeDeserialization()
-                .Build();
-        }
-    }
-
+    [ExcludeFromCodeCoverage]
     public class IncludeRef : Dictionary<object, object>
     {
         public string? FileName { get; set; }
