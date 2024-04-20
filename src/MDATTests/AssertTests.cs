@@ -1,5 +1,6 @@
 ﻿using MDATTests;
 using MDATTests.Models;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
@@ -50,6 +51,23 @@ namespace MDAT.Tests
 
             object value = await Verify.Assert(() =>
                                         Task.FromResult(memory), new Expected { verify = new VerifyStep[] { new() { data = "AQIDBA==" } } });
+        }
+
+        /// <summary>
+        /// Test Stream output
+        /// </summary>
+        [TestMethod]
+        public async Task Test_stream_output_as_base64_result()
+        {
+            object value = await Verify.Assert(() => Test(), new Expected { verify = new VerifyStep[] { new() { data = "{\r\n  \"FileStream\": \"AQIDBA==\",\r\n  \"ContentType\": \"plain/text\",\r\n  \"FileDownloadName\": \"\",\r\n  \"LastModified\": null,\r\n  \"EntityTag\": null,\r\n  \"EnableRangeProcessing\": false\r\n}" } } });
+        }
+
+
+        private static async Task<IActionResult> Test()
+        {
+            await Task.Delay(1);
+            var memory = new MemoryStream(new byte[] { 0x01, 0x02, 0x03, 0x04 });
+            return new FileStreamResult(memory, "plain/text");
         }
     }
 }
