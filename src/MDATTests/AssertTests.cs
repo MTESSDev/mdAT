@@ -2,6 +2,7 @@
 using MDATTests.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -59,15 +60,31 @@ namespace MDAT.Tests
         [TestMethod]
         public async Task Test_stream_output_as_base64_result()
         {
-            object value = await Verify.Assert(() => Test(), new Expected { verify = new VerifyStep[] { new() { data = "{\r\n  \"FileStream\": \"AQIDBA==\",\r\n  \"ContentType\": \"plain/text\",\r\n  \"FileDownloadName\": \"\",\r\n  \"LastModified\": null,\r\n  \"EntityTag\": null,\r\n  \"EnableRangeProcessing\": false\r\n}" } } });
+            var mockTest = new Mock<IDemoResult>();
+            var memory = new MemoryStream(new byte[] { 0x01, 0x02, 0x03, 0x04 });
+
+            mockTest.Setup(m => m.DemoReturnStream()).Returns(memory);
+            object value = await Verify.Assert(() => Test(mockTest.Object), new Expected { verify = new VerifyStep[] { new() { data = "{\r\n  \"FileStream\": \"AQIDBA==\",\r\n  \"ContentType\": \"plain/text\",\r\n  \"FileDownloadName\": \"\",\r\n  \"LastModified\": null,\r\n  \"EntityTag\": null,\r\n  \"EnableRangeProcessing\": false\r\n}" } } });
         }
 
 
-        private static async Task<IActionResult> Test()
+        private static async Task<IActionResult> Test(IDemoResult demoResult)
         {
             await Task.Delay(1);
-            var memory = new MemoryStream(new byte[] { 0x01, 0x02, 0x03, 0x04 });
-            return new FileStreamResult(memory, "plain/text");
+            return new FileStreamResult(demoResult.DemoReturnStream(), "plain/text");
+        }
+
+        public interface IDemoResult
+        {
+            public Stream DemoReturnStream();
+        }
+
+        public class DemoResult : IDemoResult
+        {
+            public Stream DemoReturnStream()
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }

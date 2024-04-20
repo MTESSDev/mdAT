@@ -13,6 +13,8 @@ namespace MDAT.Resolver
         {
             if (value is Stream stream)
             {
+                var position = stream.Position;
+
                 using (var memoryStream = new MemoryStream())
                 {
                     stream.CopyTo(memoryStream);
@@ -20,6 +22,8 @@ namespace MDAT.Resolver
                     string base64String = Convert.ToBase64String(byteArray);
                     writer.WriteValue(base64String);
                 }
+
+                stream.Position = position;
             }
         }
 
