@@ -48,11 +48,7 @@ public static class Extensions
 
         finalExpectedData = DataAdapter(item.data, finalExpectedData);
 
-        var data = JsonConvert.SerializeObject(obj, new JsonSerializerSettings
-        {
-            ContractResolver = new NoResolver(),
-            Formatting = Formatting.Indented
-        });
+        var data = JsonConvert.SerializeObject(obj, JsonSerializeSettings());
 
         if (!string.IsNullOrWhiteSpace(expected.generateExpectedData))
         {
@@ -115,6 +111,16 @@ public static class Extensions
                                 new JsonDiffConfig(item.allowAdditionalProperties));
     }
 
+    public static JsonSerializerSettings JsonSerializeSettings()
+    {
+        return new JsonSerializerSettings
+        {
+            ContractResolver = new NoResolver(),
+            Converters = new List<JsonConverter> { new StreamToBase64Converter() },
+            Formatting = Formatting.Indented
+        };
+    }
+
     private static string? HandleValue(JToken? jToken)
     {
         if (jToken is null) return null;
@@ -134,11 +140,7 @@ public static class Extensions
             }
             else
             {
-                finalData = JsonConvert.SerializeObject(data, new JsonSerializerSettings
-                {
-                    ContractResolver = new NoResolver(),
-                    Formatting = Formatting.Indented
-                });
+                finalData = JsonConvert.SerializeObject(data, JsonSerializeSettings());
             }
         }
 

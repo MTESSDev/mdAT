@@ -39,5 +39,17 @@ namespace MDAT.Tests
             object value = await Verify.Assert(() =>
                                         Task.FromResult("{Test!"), new Expected() { verify = new VerifyStep[] { new VerifyStep { data = "{Test!", type = "match", jsonPath = "$" } } });
         }
+
+        /// <summary>
+        /// Test Stream output
+        /// </summary>
+        [TestMethod]
+        public async Task Test_stream_output_as_base64()
+        {
+            var memory = new MemoryStream(new byte[] { 0x01, 0x02, 0x03, 0x04 });
+
+            object value = await Verify.Assert(() =>
+                                        Task.FromResult(memory), new Expected { verify = new VerifyStep[] { new() { data = "AQIDBA==" } } });
+        }
     }
 }

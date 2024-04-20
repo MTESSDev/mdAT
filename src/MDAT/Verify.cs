@@ -36,11 +36,7 @@ public static class Verify
         }
         finally
         {
-            var strData = JsonConvert.SerializeObject(data, new JsonSerializerSettings
-            {
-                ContractResolver = new NoResolver(),
-                Formatting = Formatting.Indented
-            });
+            var strData = JsonConvert.SerializeObject(data, Extensions.JsonSerializeSettings());
 
             Console.WriteLine($"Actual raw for \"{expected?.name ?? functionAMocker.Method.ReturnParameter.ParameterType.GetGenericArguments()[0].Name}\":");
             Console.WriteLine(strData);

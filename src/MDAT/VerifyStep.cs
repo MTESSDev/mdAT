@@ -5,7 +5,7 @@ namespace MDAT
     public class VerifyStep
     {
         [DefaultValue("match")]
-        public string? type { get; set; }
+        public string? type { get; set; } = "match";
 
         [DefaultValue("$")]
         public string jsonPath { get; set; } = "$";
