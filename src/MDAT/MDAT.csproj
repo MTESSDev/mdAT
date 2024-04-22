@@ -35,7 +35,7 @@
     <PackageReference Include="LoxSmoke.DocXml" Version="3.6.1" />
     <PackageReference Include="Markdig" Version="0.37.0" />
     <PackageReference Include="Moq" Version="4.18.4" />
-    <PackageReference Include="MSTest.TestFramework" Version="3.0.2" />
+    <PackageReference Include="MSTest.TestFramework" Version="3.3.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Quibble.Xunit" Version="0.2.51" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.6" />
