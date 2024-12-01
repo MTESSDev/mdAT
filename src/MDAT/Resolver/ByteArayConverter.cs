@@ -1,7 +1,5 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Quibble;
-using System.Text.Json.Serialization;
 using YamlDotNet.Core;
 using YamlDotNet.Core.Events;
 using YamlDotNet.Serialization;
@@ -15,7 +13,7 @@ namespace MDAT.Resolver
             return type == typeof(byte[]);
         }
 
-        public object? ReadYaml(IParser parser, Type type)
+        public object? ReadYaml(IParser parser, Type type, ObjectDeserializer objectDeserializer)
         {
             var value = parser.Consume<Scalar>().Value;
 
@@ -29,7 +27,7 @@ namespace MDAT.Resolver
             return Type.GetType(value, throwOnError: true)!;
         }
 
-        public void WriteYaml(IEmitter emitter, object? value, Type type)
+        public void WriteYaml(IEmitter emitter, object? value, Type type, ObjectSerializer objectSerializer)
         {
             var val = JsonConvert.SerializeObject(value!);
             var ttt = JToken.Parse(val);

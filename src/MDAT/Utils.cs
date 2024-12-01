@@ -116,7 +116,7 @@ public static class Extensions
         return new JsonSerializerSettings
         {
             ContractResolver = new NoResolver(),
-            Converters = new List<JsonConverter> { new StreamToBase64Converter() },
+            Converters = new List<JsonConverter> { new StreamToBase64Converter(), new JsonDocumentConverter() },
             Formatting = Formatting.Indented
         };
     }
