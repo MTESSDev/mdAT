@@ -5,6 +5,7 @@ using MDAT.Resolver;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.ComponentModel;
 using System.Reflection;
+using System.Text;
 using YamlDotNet.Core;
 using YamlDotNet.Serialization;
 using YamlDotNet.System.Text.Json;
@@ -156,7 +157,7 @@ namespace MDAT
                             ? $"\n\n> {methodComments?.Summary.ReplaceLineEndings("\\\n")}"
                             : "";
 
-            File.WriteAllText(ParsedPath, $"# {testMethod.Name}{summary}\n\n## Case 1\n\nDescription\n\n``````yaml\n{code}``````");
+            File.WriteAllText(ParsedPath, $"# {testMethod.Name}{summary}\n\n## Case 1\n\nDescription\n\n``````yaml\n{code}``````", Encoding.UTF8);
         }
 
         static string? DescribeTypeOfObject(Type type, string indent, int pos = 0)
