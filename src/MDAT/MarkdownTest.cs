@@ -1,14 +1,14 @@
-﻿using System.Reflection;
-using YamlDotNet.Serialization;
-using MDAT.Resolver;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using LoxSmoke.DocXml;
 using Markdig;
 using Markdig.Syntax;
+using MDAT.Resolver;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.ComponentModel;
+using System.Reflection;
+using System.Text;
 using YamlDotNet.Core;
-using LoxSmoke.DocXml;
-using Xunit.Sdk;
-using System.Collections;
+using YamlDotNet.Serialization;
+using YamlDotNet.System.Text.Json;
 
 namespace MDAT
 {
@@ -157,7 +157,7 @@ namespace MDAT
                             ? $"\n\n> {methodComments?.Summary.ReplaceLineEndings("\\\n")}"
                             : "";
 
-            File.WriteAllText(ParsedPath, $"# {testMethod.Name}{summary}\n\n## Case 1\n\nDescription\n\n``````yaml\n{code}``````");
+            File.WriteAllText(ParsedPath, $"# {testMethod.Name}{summary}\n\n## Case 1\n\nDescription\n\n``````yaml\n{code}``````", Encoding.UTF8);
         }
 
         static string? DescribeTypeOfObject(Type type, string indent, int pos = 0)
@@ -221,6 +221,8 @@ namespace MDAT
         {
             DeserializerBuilder deserializer = new DeserializerBuilder()
               .WithTypeConverter(new ByteArayConverter(), e => e.OnBottom())
+              .WithTypeConverter(new SystemTextJsonYamlTypeConverter())
+              .WithTypeInspector(x => new SystemTextJsonTypeInspector(x))
               .WithNodeTypeResolver(resolver)
               .WithNodeDeserializer(new KeyValuePairNodeDeserializer())
               .IgnoreUnmatchedProperties()
