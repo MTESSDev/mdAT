@@ -244,11 +244,19 @@ namespace MDAT.Tests
         /// </summary>
         [TestMethod]
         [MarkdownTest("~\\Tests\\md-json-document-test.md")]
-        public async Task Md_JsonDocument_test(JsonDocument jsonDocument, Expected expected)
+        public async Task Md_JsonDocument_test(JsonDocument jsonDocument, Test1 test1, Expected expected, Expected expected2)
         {
             object value = await Verify.Assert(() =>
                                           Task.FromResult(jsonDocument), expected);
 
+            object value2 = await Verify.Assert(() =>
+                                       Task.FromResult(test1), expected2);
+
+        }
+
+        public class Test1
+        {
+            public JsonDocument JsonDocument { get; set; }
         }
 
         /// <summary>

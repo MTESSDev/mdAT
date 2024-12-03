@@ -14,7 +14,8 @@ namespace MDAT.Resolver
         {
             if (value is JsonDocument netJson)
             {
-                writer.WriteValue(netJson.RootElement.ToString());
+                using var reader = new JsonTextReader(new StringReader(netJson.RootElement.ToString()));
+                writer.WriteToken(reader); // Écrit correctement le contenu JSON dans le flux
             }
         }
 
