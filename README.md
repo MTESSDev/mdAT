@@ -91,9 +91,9 @@ Avec `mdAT`, les analystes et les développeurs peuvent travailler ensemble avec
 |generateExpectedData|Non|null|Permet de spécifier un chemin vers un fichier existant afin d'écrire le retour du test pour ce expected afin de le déboguer plus facilement.|
 |verify|Oui||Contient les paramètres de validation du expected.|
 |verify.type|Non|match|`match` est la seule valeur possible actuellement.|
-|verify.jsonPath|Non|$|Permet de spécifier la racine de l'objet avec "\$" ou une propriété spécifique avec "\$.UnePropriete".|
+|verify.jsonPath|Non|$|Permet de spécifier la racine de l'objet avec `$` ou une propriété spécifique avec `$.UnePropriete`. On peut aussi spécifier l'index d'une liste avec par exemple `$[3]` ou le nombre d'éléments avec `$.length()`.|
 |verify.allowAdditionalProperties|Non|false|Permet d'obliger à spécifier toutes les propriétés de l'objet.|
-|verify.data|Non|null|Objet à comparer dans le test (mais c'est plus clair d'indiquer que data est null que de l'omettre). On peut aussi assigner null au expected à la place de mettre null dans verify.data afin de l'écrire avec moins de lignes (si on a besoin que du jsonPath par défaut). Par contre, le expected n'aura pas de nom dans le message d'échec du test si le cas échoue.|
+|verify.data|Non|null|Objet à comparer (en yaml/json/base64/ect...). La section est facultative, mais c'est plus clair d'indiquer que data est null que de l'omettre. On peut aussi assigner null au expected à la place de mettre null dans verify.data afin de l'écrire avec moins de lignes (si on a besoin que du jsonPath par défaut). Par contre, le expected n'aura pas de nom dans le message d'échec du test si le cas échoue.|
 
 ## Paramètres supplémentaire
 
@@ -107,8 +107,7 @@ Et ne pas exécuter un cas avec :
 ``````yaml skipped
 ```````
 
-(Ne pas oublier de retirer un `selected` temporaire par après afin que les autre cas puissent s'exécuter, sinon... 😅)
-Et de même pour `skipped`.
+(Ne pas oublier de retirer un `selected` temporaire par après afin que les autre cas puissent s'exécuter, sinon... 😅). Et de même pour `skipped`.
 
 ## Config csproj
 
@@ -203,7 +202,11 @@ expected:
 
 ### Expected objet
 
-On peut vérifier un objet.
+On peut vérifier un objet. Il peut être inscrit dans le markdown ou dans un fichier à part. Les expected peuvent être soit en yaml ou en json.
+
+On peut omettre certaines propriétés de la validation en inscrivant true au `allowAdditionalProperties` du expected.
+
+On peut aussi vérifier une propriété spécifique en l'inscrivant dans le `jsonPath` du expected.
 
 **Tests**
 ````csharp
@@ -230,6 +233,8 @@ public Utilisateur? ObtenirUtilisateur(int id)
 ````
 
 **Markdown**
+
+Yaml/Json
 ``````yaml
 # Id de l'utilisateur
 id: 1
@@ -241,11 +246,46 @@ expected:
         Id: 1
         Prenom: Chuck
         Nom: Norris
+    - type: match
+      data: {
+        "Id": 1
+        "Prenom": "Chuck"
+        "Nom": "Norris"
+      }
+``````
+
+Fichier
+``````yaml
+# Id de l'utilisateur
+id: !include .\Fichiers\idChuck.yml
+# Résultat attendu
+expected:
+  verify: 
+    - type: match
+      data: !include .\Fichiers\Chuck.yml
+``````
+
+Partiel
+``````yaml
+# Id de l'utilisateur
+id: 1
+# Résultat attendu
+expected:
+  verify: 
+    - type: match
+      allowAdditionalProperties: true
+      data: 
+        Prenom: Chuck
+    - type: match
+      jsonPath: $.Nom
+      data: Norris
 ``````
 
 ### Expected liste d'objets
 
 On peut vérifier une liste d'objets.
+
+On peut aussi vérifier un élément à une position spécifique et le nombre d'éléments avec le `jsonPath` du expected.
 
 **Tests**
 ````csharp
@@ -283,6 +323,17 @@ expected:
         - Id: 2
           Prenom: John
           Nom: Doe
+  verify: 
+    - type: match
+      jsonPath: $.[1]
+      data:
+        - Id: 2
+          Prenom: John
+          Nom: Doe
+  verify: 
+    - type: match
+      jsonPath: $.length()
+      data: 2
 ``````
 
 ### Expected multiple
@@ -311,27 +362,31 @@ public async Task ExpectedMultiple(List<Utilisateur> utilisateurs, Expected expe
     List<IEnumerable<object>> paramsAppels = [];
 
     _mockUtilisateurDO
-        .Setup(x => x.ModifierUtilisateur(It.IsAny<Utilisateur>())).Returns(true)
+        .Setup(x => x.ModifierUtilisateur(It.IsAny<Utilisateur>())).ReturnsAsync(true)
         .Callback(new InvocationAction(i => { nbAppels++; paramsAppels.Add(i.Arguments.Take(1)); }));
 
     _mockUtilisateurDO
-        .Setup(x => x.ModifierUtilisateur(null)).Returns(false)
+        .Setup(x => x.ModifierUtilisateur(null)).ReturnsAsync(false)
         .Callback(new InvocationAction(i => { nbAppels++; paramsAppels.Add(i.Arguments.Take(1)); }));
 
-    _ = await Verify.Assert(() => Task.FromResult(_gestionUtilisateur.ModifierUtilisateurs(utilisateurs)), expectedRetour);
-
+    _ = await Verify.Assert(async () => await _gestionUtilisateur.ModifierUtilisateurs(utilisateurs), expectedRetour);
     _ = await Verify.Assert(() => Task.FromResult(nbAppels), expectedNbAppels);
-
     _ = await Verify.Assert(() => Task.FromResult(paramsAppels), expectedParamsAppels);
 }
 ````
 
 **GestionUtilisateur**
 ````csharp
-public int ModifierUtilisateurs(List<Utilisateur> utilisateurs)
+public async Task<int> ModifierUtilisateurs(List<Utilisateur> utilisateurs)
 {
-    int nbUtilisateurModifie = 0
-    utilisateurs.ForEach(u => { if (_utilisateurDO.ModifierUtilisateur(u)) nbUtilisateurModifie++; })
+    int nbUtilisateurModifie = 0;
+
+    foreach (Utilisateur utilisateur in utilisateurs)
+    {
+        if (await _utilisateurDO.ModifierUtilisateur(utilisateur))
+            nbUtilisateurModifie++;
+    }
+    
     return nbUtilisateurModifie;
 }
 ````
@@ -401,16 +456,16 @@ public async Task ExpectedMultipleDictionnaire(List<Utilisateur> utilisateurs, D
     List<IEnumerable<object>> paramsAppels = [];
 
     _mockUtilisateurDO
-        .Setup(x => x.ModifierUtilisateur(It.IsAny<Utilisateur>())).Returns(true)
+        .Setup(x => x.ModifierUtilisateur(It.IsAny<Utilisateur>())).ReturnsAsync(true)
         .Callback(new InvocationAction(i => { nbAppels++; paramsAppels.Add(i.Arguments.Take(1)); }));
 
     _mockUtilisateurDO
-        .Setup(x => x.ModifierUtilisateur(null)).Returns(false)
+        .Setup(x => x.ModifierUtilisateur(null)).ReturnsAsync(false)
         .Callback(new InvocationAction(i => { nbAppels++; paramsAppels.Add(i.Arguments.Take(1)); }));
 
     if (expected.TryGetValue("expectedRetour", out var expectedRetour))
     {
-        _ = await Verify.Assert(() => Task.FromResult(_gestionUtilisateur.ModifierUtilisateurs(utilisateurs)), expectedRetour);
+        _ = await Verify.Assert(async () => await _gestionUtilisateur.ModifierUtilisateurs(utilisateurs), expectedRetour);
     }
     else
     {
@@ -431,10 +486,15 @@ public async Task ExpectedMultipleDictionnaire(List<Utilisateur> utilisateurs, D
 
 **GestionUtilisateur**
 ````csharp
-public int ModifierUtilisateurs(List<Utilisateur> utilisateurs)
+public async Task<int> ModifierUtilisateurs(List<Utilisateur> utilisateurs)
 {
     int nbUtilisateurModifie = 0;
-    utilisateurs.ForEach(u => { if (_utilisateurDO.ModifierUtilisateur(u)) nbUtilisateurModifie++; });
+
+    foreach (Utilisateur utilisateur in utilisateurs)
+    {
+        if (await _utilisateurDO.ModifierUtilisateur(utilisateur))
+            nbUtilisateurModifie++;
+    }
 
     return nbUtilisateurModifie;
 }
@@ -480,62 +540,16 @@ expected:
             - null
 ``````
 
-### Expected partiel
-
-On peut omettre certaines propriétés des objets vérifié en inscrivant true au `allowAdditionalProperties` du expected.
-
-On peut aussi vérifier une propriété spécifique en l'inscrivant dans le `jsonPath` du expected.
-
-**Tests**
-````csharp
-/// <summary>
-/// Expected partiel
-/// </summary>
-/// <param name="id">Id de l'utilisateur</param>
-/// <param name="expected">Résultat attendu</param>
-/// <returns></returns>
-[TestMethod]
-[MarkdownTest("~/Tests/{method}.md")]
-public async Task ExpectedPartiel(int id, Expected expected)
-{
-    _ = await Verify.Assert(() => Task.FromResult(_gestionUtilisateur.ObtenirUtilisateur(id)), expected);
-}
-````
-
-**GestionUtilisateur**
-````csharp
-public Utilisateur? ObtenirUtilisateur(int id)
-{
-    return _utilisateurs.Find(u => u.Id == id);
-}
-````
-
-**Markdown**
-``````yaml
-# Id de l'utilisateur
-id: 1
-# Résultat attendu
-expected:
-  verify: 
-    - type: match
-      allowAdditionalProperties: true
-      data: 
-        Prenom: Chuck
-    - type: match
-      jsonPath: $.Nom
-      data: Norris
-``````
-
 ### Expected fichier
 
-On peut référencer un fichier comme paramètre d'entré du test ou comme data dans le expected.
+On peut comparer un fichier comme paramètre du test ou comme data dans le expected.
 
 **Tests**
 ````csharp
 /// <summary>
 /// Expected fichier
 /// </summary>
-/// <param name="paramFichierExemple">Exemple de fichier en paramètre d'entré</param>
+/// <param name="paramFichierExemple">Exemple de fichier en paramètre</param>
 /// <param name="expected">Résultat attendu</param>
 /// <returns></returns>
 [TestMethod]
@@ -555,8 +569,10 @@ public Stream ObtenirFichierUtilisateur()
 ````
 
 **Markdown**
+
+`!include`
 ``````yaml
-# Exemple de fichier en paramètre d'entré
+# Exemple de fichier en paramètre
 paramFichierExemple: !include ..\..\..\docMdat\docMdat\Utilisateurs.txt
 # Résultat attendu
 expected:
@@ -564,8 +580,18 @@ expected:
     - type: match
       data: !include ..\..\..\docMdat\docMdat\Utilisateurs.txt
 ``````
+base64
+``````yaml
+# Exemple de fichier en paramètre
+paramFichierExemple: Sm9obiBEb2UNClNhcmFoIENvbm5vcg==
+# Résultat attendu
+expected:
+  verify: 
+    - type: match
+      data: Sm9obiBEb2UNClNhcmFoIENvbm5vcg==
+``````
 
-### Expected ObjectOrException
+### Mock ObjectOrException
 
 On peut utiliser un `ObjectOrException` comme retour d'un mock afin de simuler soit le retour d'une valeur ou d'une exception afin de tester comment le traitement gère son retour.
 
@@ -704,6 +730,38 @@ expected:
               Id: 3
               Prenom: Sarah
               Nom: Connor
+``````
+
+### JsonDocument
+
+On peut utiliser un `JsonDocument` comme paramètre ou expected.
+
+``````yaml
+# Utilisateur à ajouter
+utilisateur: { "Prenom": "Chuck", "Nom": "Norris" }
+# Résultat attendu
+expected:
+  expectedRetour:
+    verify: 
+      - type: match
+        data: true
+``````
+
+### KeyValuePair
+
+On peut utiliser un `KeyValuePair` comme paramètre ou expected.
+
+``````yaml
+# Utilisateur à modifier
+utilisateur:
+  key: 1
+  value: Chuck Norris
+# Résultat attendu
+expected:
+  expectedRetour:
+    verify: 
+      - type: match
+        data: true
 ``````
 
 # mdAT - Markdown Auto-Tests
