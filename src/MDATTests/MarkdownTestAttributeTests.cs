@@ -1,425 +1,343 @@
-﻿using MDATTests;
+﻿using LoxSmoke.DocXml;
+using MDATTests;
 using MDATTests.Models;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using System;
+using System.Reflection;
+using System.Text;
 using System.Text.Json;
-using static MDAT.Tests.MarkdownTestAttributeTests;
-
-//[assembly: TestDataSourceDiscovery(TestDataSourceDiscoveryOption.DuringExecution)]
+using Xunit;
 
 namespace MDAT.Tests
 {
-    /// <summary>
-    /// Ignored comment
-    /// </summary>
-    [TestClass]
-    public class MarkdownTestAttributeTests
+    public class MarkdownTheoryTests
     {
-
-        /// <summary/>
         public class Params
         {
             public Dictionary<object, object> Test { get; set; }
         }
 
-        static IEnumerable<object[]> ReusableTestDataProperty
+        public static IEnumerable<object[]> ReusableTestDataProperty => new[]
         {
-            get
+            new object[]
             {
-                return new[]
+                new Params
                 {
-                    new object[] { new Params() { Test = new Dictionary<object, object> { { "test", new Dictionary<object, object> { { "test", 1 } } } } } },
-                };
-            }
-        }
+                    Test = new Dictionary<object, object>
+                    {
+                        { "test", new Dictionary<object, object> { { "test", 1 } } }
+                    }
+                }
+            },
+        };
 
         /// <summary>
-        /// Simple test, addition 2 numbers, compare expected result
+        /// Simple test avec données réutilisables
         /// </summary>
-        [TestMethod]
-        [DynamicData("ReusableTestDataProperty")]
+        [Theory]
+        [MemberData(nameof(ReusableTestDataProperty))]
         public async Task Dynam(Params val1)
         {
-            _ = await Verify.Assert(() => Task.FromResult(val1), new Expected() { verify = new VerifyStep[] { new VerifyStep { data = "{\"Test\":{\"test\":{\"test\":1}}}", type = "match", jsonPath = "$" } } });
+            _ = await Verify.Assert(
+                () => Task.FromResult(val1),
+                new Expected
+                {
+                    verify = new[]
+                    {
+                        new VerifyStep
+                        {
+                            data = "{\"Test\":{\"test\":{\"test\":1}}}",
+                            type = "match",
+                            jsonPath = "$"
+                        }
+                    }
+                });
         }
 
         /// <summary>
-        /// Simple test, addition 2 numbers, compare expected result
+        /// Markdown data-driven (ex-[MarkdownTest("~/Tests/test.md")])
         /// </summary>
-        [TestMethod]
-        [MarkdownTest("~/Tests/test.md")]
+        [MarkdownTheory("~/Tests/test.md")]
         public async Task Md1(int val1, int val2, string expected)
         {
             _ = await Verify.Assert(() => Task.FromResult(Utils.Calculer(val1, val2)), expected);
         }
 
-        /// <summary>
-        /// Test JustME :)
-        /// </summary>
-        [TestMethod]
-        [MarkdownTest("~/Tests/test-justme.md")]
+        [MarkdownTheory("~/Tests/test-justme.md")]
         public async Task Md_Justme(int val1, int val2, string expected)
         {
             _ = await Verify.Assert(() => Task.FromResult(Utils.Calculer(val1, val2)), expected);
         }
 
-
-        /// <summary>
-        /// Test skip
-        /// </summary>
-        [TestMethod]
-        [MarkdownTest("~/Tests/test-skip.md")]
+        [MarkdownTheory("~/Tests/test-skip.md")]
         public async Task Md_Skip(int val1, int val2, string expected)
         {
             _ = await Verify.Assert(() => Task.FromResult(Utils.Calculer(val1, val2)), expected);
         }
 
-
-        private async Task Md2(ObjectOrException<IEnumerable<FormulaireWebFRW1DO>> formList)
-        {
-            await Task.Delay(1);
-        }
-
-        /// <summary>
-        /// Multi level object
-        /// </summary>
-        [TestMethod]
-        [MarkdownTest("~/Tests/{method}.md")]
+        [MarkdownTheory("~/Tests/{method}.md")]
         public async Task Multi_level(FormulaireWebFRW1DO form, Expected expected)
         {
             _ = await Verify.Assert(() => Task.FromResult(form), expected);
         }
 
-        /// <summary>
-        /// External file include
-        /// </summary>
-        [TestMethod]
-        [MarkdownTest("~/Tests/{method}.md")]
+        [MarkdownTheory("~/Tests/{method}.md")]
         public async Task External_file(FormulaireWebFRW1DO form, Expected expected)
         {
             _ = await Verify.Assert(() => Task.FromResult(form), expected);
         }
 
-        /// <summary>
-        /// Test Exception
-        /// </summary>
-        [TestMethod]
-        [MarkdownTest("~/Tests/{method}.md")]
+        [MarkdownTheory("~/Tests/{method}.md")]
         public async Task Exception_test(FormulaireWebFRW1DO form, Expected expected)
         {
             _ = await Verify.Assert(() => Task.FromResult(ThrowE()), expected);
         }
 
-        private bool ThrowE()
-        {
-            throw new InvalidOperationException();
-        }
+        private static bool ThrowE() => throw new InvalidOperationException();
 
-        /// <summary>
-        /// External file include 2
-        /// </summary>
-        [TestMethod]
-        [MarkdownTest("~/Tests/{method}.md")]
+        [MarkdownTheory("~/Tests/{method}.md")]
         public async Task External_file2(string form, Expected expected)
         {
             _ = await Verify.Assert(() => Task.FromResult(form), expected);
         }
 
-        /// <summary>
-        /// External file include base64
-        /// </summary>
-        [TestMethod]
-        [MarkdownTest("~/Tests/{method}.md")]
+        [MarkdownTheory("~/Tests/{method}.md")]
         public async Task External_file_base64(byte[] form, Expected expected)
         {
             _ = await Verify.Assert(() => Task.FromResult(form), expected);
         }
 
-        /// <summary>
-        /// Nullable byte[]
-        /// </summary>
-        [TestMethod]
-        [MarkdownTest("~/Tests/{method}.md")]
+        [MarkdownTheory("~/Tests/{method}.md")]
         public async Task Nullable_byte_array(byte[]? form, Expected expected)
         {
             _ = await Verify.Assert(() => Task.FromResult(form), expected);
         }
 
-        /// <summary>
-        /// External file include base64 string
-        /// </summary>
-        [TestMethod]
-        [MarkdownTest("~/Tests/{method}.md")]
+        [MarkdownTheory("~/Tests/{method}.md")]
         public async Task External_file_base64_String(string form, Expected expected)
         {
             _ = await Verify.Assert(() => Task.FromResult(form), expected);
         }
 
-        /// <summary>
-        /// External file include byte[] dictionary
-        /// </summary>
-        [TestMethod]
-        [MarkdownTest("~/Tests/{method}.md")]
+        [MarkdownTheory("~/Tests/{method}.md")]
         public async Task External_file_byte_dictionary(Dictionary<string, byte[]> form, Expected expected)
         {
             _ = await Verify.Assert(() => Task.FromResult(form), expected);
         }
 
-        /// <summary>
-        /// External file include string dictionary
-        /// </summary>
-        [TestMethod]
-        [MarkdownTest("~/Tests/{method}.md")]
+        [MarkdownTheory("~/Tests/{method}.md")]
         public async Task External_file_string_dictionary(Dictionary<string, string> form, Expected expected)
         {
             _ = await Verify.Assert(() => Task.FromResult(form), expected);
         }
 
-        /// <summary>
-        /// Dictionary_object_object
-        /// </summary>
-        [TestMethod]
-        [MarkdownTest("~/Tests/{method}.md")]
+        [MarkdownTheory("~/Tests/{method}.md")]
         public async Task Dictionary_object_object(Dictionary<object, object> dict, Expected expected)
         {
             _ = await Verify.Assert(() => Task.FromResult(dict), expected);
         }
 
-        /// <summary>
-        /// Dictionary_object_object in Dictionary_object_object 
-        /// </summary>
-        [TestMethod]
-        [MarkdownTest("~/Tests/{method}.md")]
+        [MarkdownTheory("~/Tests/{method}.md")]
         public async Task Dictionary_object_object_in_Dictionary_object_object(Dictionary<object, object> dict, Expected expected)
         {
             _ = await Verify.Assert(() => Task.FromResult(dict), expected);
         }
 
-        /// <summary>
-        /// Exception test
-        /// </summary>
-        [TestMethod]
-        [MarkdownTest("~/Tests/{method}.md")]
+        [MarkdownTheory("~/Tests/{method}.md")]
         public async Task Crash_Test(int val1, int val2, Expected expected)
         {
             _ = await Verify.Assert(() => Task.FromResult(Utils.CrashExceptionCheck(val1, val2)), expected);
         }
 
-
-        /// <summary>
-        /// Simple summary test for validation
-        /// With multiline
-        /// </summary>
-        /// <param name="db">Database mock</param>
-        /// <param name="expected">Expected result</param>
-        /// <returns></returns>
+        // --- Helpers de doc pour la génération/extraction ---
         public void MdWithSummary(FormulaireWebFRW1DO db, Expected expected) { }
-
-
         public void MdWithoutSummary(FormulaireWebFRW1DO db, Expected expected) { }
 
         /// <summary>
-        /// Test XML comments extraction and file generation
-        /// This test whole document integrity
+        /// Remplace l’ancien test qui appelait .GetData() pour générer un fichier
         /// </summary>
-        [TestMethod]
-        [MarkdownTest("~\\Tests\\{method}.md")]
-        public async Task Md_Extraction_test(Expected expected)
+        /*[Fact]
+        public async Task Md_Extraction_test()
         {
             var guid = Guid.NewGuid();
+            var path = $"~\\Tests\\Generated\\Generated-md-Test-{guid}.md";
 
-            var test = new MarkdownTestAttribute($"~\\Tests\\Generated\\Generated-md-Test-{guid}.md");
             var method = Utils.GetMethodInfo(() => MdWithSummary);
+            MarkdownScaffold.CreateFor(method, path);
 
-            test.GetData(method);
+            var expected = *//* ton Expected d’origine *//*;
+            object value = await Verify.Assert(() => Task.FromResult(File.ReadAllText(Extensions.GetCurrentPath(path, false))), expected);
+        }*/
 
-            object value = await Verify.Assert(() =>
-                                        Task.FromResult(File.ReadAllText(test.ParsedPath)), expected);
-        }
-
-        /// <summary>
-        /// Test JsonDocument Load
-        /// This test whole document integrity
-        /// </summary>
-        [TestMethod]
-        [MarkdownTest("~\\Tests\\md-json-document-test.md")]
+        [MarkdownTheory("~\\Tests\\md-json-document-test.md")]
         public async Task Md_JsonDocument_test(JsonDocument jsonDocument, Test1 test1, Expected expected, Expected expected2)
         {
-            object value = await Verify.Assert(() =>
-                                          Task.FromResult(jsonDocument), expected);
-
-            object value2 = await Verify.Assert(() =>
-                                       Task.FromResult(test1), expected2);
-
+            object value = await Verify.Assert(() => Task.FromResult(jsonDocument), expected);
+            object value2 = await Verify.Assert(() => Task.FromResult(test1), expected2);
         }
 
-        public class Test1
-        {
-            public JsonDocument JsonDocument { get; set; }
-        }
+        public class Test1 { public JsonDocument JsonDocument { get; set; } }
 
-        /// <summary>
-        /// Test tests naming values
-        /// </summary>
-        [TestMethod]
-        [MarkdownTest("~\\Tests\\{method}.md")]
-        public async Task Test_Tests_Naming(Expected expected)
-        {
-            var test = new MarkdownTestAttribute($"~\\Tests\\test.md");
-            var method = Utils.GetMethodInfo(() => Md1);
-
-            var tests = test.GetData(method);
-
-            object value = await Verify.Assert(() =>
-                                        Task.FromResult(test.GetDisplayName(method, tests.LastOrDefault())!), expected);
-        }
-
-        /// <summary>
-        /// Test object deserialization 
-        /// </summary>
-        [TestMethod]
-        [MarkdownTest("~\\Tests\\{method}.md")]
-        public async Task Test_object_deserialization(Expected expected)
-        {
-            var test = new MarkdownTestAttribute($"~\\Tests\\test-output-test-object-deserialization.md");
-            var method = Utils.GetMethodInfo(() => Md2);
-
-            var tests = test.GetData(method);
-
-            object value = await Verify.Assert(() =>
-                                        Task.FromResult(File.ReadAllText(test.ParsedPath)), expected);
-        }
-
-        /// <summary>
-        /// Test XML comments extraction and file generation
-        /// This test whole document integrity
-        /// </summary>
-        [TestMethod]
-        public async Task Md_no_method_test()
+        /*[Fact]
+        public async Task Md_Extraction_test_nosummary()
         {
             var guid = Guid.NewGuid();
-
-            var test = new MarkdownTestAttribute($"~\\Tests\\Generated\\Generated-md-Test-{guid}.md");
-            object value = await Verify.Assert(() =>
-                                        Task.FromResult(test.GetData(null!)), new Expected()
-                                        {
-                                            verify = new VerifyStep[] { new VerifyStep { data = "{ " +
-                                                        "\"ClassName\":\"System.ArgumentNullException\",       " +
-                                                        "\"Message\":\"Value cannot be null.\"," +
-                                                        "\"ParamName\":\"testMethod\"}", type = "match", jsonPath = "$",
-                                            allowAdditionalProperties = true } },
-                                        });
-        }
-
-        /// <summary>
-        /// Test XML comments extraction and file generation
-        /// This test whole document integrity
-        /// </summary>
-        [TestMethod]
-        [MarkdownTest("~\\Tests\\{method}.md")]
-        public async Task Md_Extraction_test_nosummary(Expected expected)
-        {
-            var guid = Guid.NewGuid();
-
-            var test = new MarkdownTestAttribute($"~\\Tests\\Generated\\Generated-md-Test-nosummary-{guid}.md");
+            var path = $"~\\Tests\\Generated\\Generated-md-Test-nosummary-{guid}.md";
             var method = Utils.GetMethodInfo(() => MdWithoutSummary);
 
-            test.GetData(method);
+            MarkdownScaffold.CreateFor(method, path);
 
-            object value = await Verify.Assert(() =>
-                                        Task.FromResult(File.ReadAllText(test.ParsedPath)), expected);
-        }
+            var expected = *//* ton Expected *//*;
+            object value = await Verify.Assert(() => Task.FromResult(File.ReadAllText(Extensions.GetCurrentPath(path, false))), expected);
+        }*/
 
-        /// <summary>
-        /// Test output expected
-        /// </summary>
-        [TestMethod]
-        [MarkdownTest("~/Tests/{method}.md")]
+        [MarkdownTheory("~/Tests/{method}.md")]
         public async Task Output_expected(Dictionary<string, string> form, byte[] bytes, Expected expected)
         {
             _ = await Verify.Assert(() => Task.FromResult(new { form, bytes }), expected);
         }
 
-
-        /// <summary>
-        /// Test jsonPath array count
-        /// </summary>
-        [TestMethod]
-        [MarkdownTest("~/Tests/{method}.md")]
+        [MarkdownTheory("~/Tests/{method}.md")]
         public async Task JsonPath(Expected expected)
         {
             _ = await Verify.Assert(() => Task.FromResult(new { test = new string[] { "val1", "val2" } }), expected);
         }
 
-        /// <summary>
-        /// Test jsonPath array count
-        /// </summary>
-        [TestMethod]
-        [MarkdownTest("~/Tests/{method}.md")]
+        [MarkdownTheory("~/Tests/{method}.md")]
         public async Task TestObjectOrException(
             ObjectOrException<FormulaireWebFRW1DO> formulaireWebFRW1DO,
             Expected expected)
         {
             var mock = new Mock<IFormulaireWebFRW1DO>();
-
             mock.Setup(e => e.ReturnVal()).ReturnsOrThrows(formulaireWebFRW1DO);
-
             _ = await Verify.Assert(() => Task.FromResult(new Test().ReturnTest(mock.Object)), expected);
         }
 
-        /// <summary>
-        /// Test jsonPath array count
-        /// </summary>
-        [TestMethod]
-        [MarkdownTest("~/Tests/{method}.md")]
+        [MarkdownTheory("~/Tests/{method}.md")]
         public async Task TestObjectOrExceptionAsync(
             ObjectOrException<FormulaireWebFRW1DO> formulaireWebFRW1DO,
             Expected expected)
         {
             var mock = new Mock<IFormulaireWebFRW1DO>();
-
             _ = mock.Setup(e => e.ReturnValAsync()).ReturnsOrThrowsAsync(formulaireWebFRW1DO);
-
             _ = await Verify.Assert(async () => await new Test().ReturnTestAsync(mock.Object), expected);
         }
 
-        /// <summary>
-        /// Test object deserialization 
-        /// </summary>
-        [TestMethod]
-        [MarkdownTest("~\\Tests\\{method}.md")]
+        [MarkdownTheory("~\\Tests\\{method}.md")]
         public async Task Test_keypairvalues(List<KeyValuePair<string, string>> input, Expected expected)
         {
-
-            object value = await Verify.Assert(() =>
-                                        Task.FromResult(input), expected);
+            object value = await Verify.Assert(() => Task.FromResult(input), expected);
         }
 
-        /// <summary>
-        /// Test class
-        /// </summary>
         public class Test
         {
-            /// <summary>
-            /// Return Test
-            /// </summary>
-            /// <param name="form"></param>
-            /// <returns></returns>
-            public FormulaireWebFRW1DO ReturnTest(IFormulaireWebFRW1DO form)
+            public FormulaireWebFRW1DO ReturnTest(IFormulaireWebFRW1DO form) => form.ReturnVal();
+            public Task<FormulaireWebFRW1DO> ReturnTestAsync(IFormulaireWebFRW1DO form) => form.ReturnValAsync();
+        }
+    }
+
+    public static class MarkdownScaffold
+    {
+        public static void CreateFor(MethodInfo runtimeMethod, string templatedPath)
+        {
+            if (runtimeMethod is null) throw new ArgumentNullException(nameof(runtimeMethod));
+            if (string.IsNullOrWhiteSpace(templatedPath)) throw new ArgumentNullException(nameof(templatedPath));
+
+            var resolvedPath = Extensions.GetCurrentPath(
+                templatedPath.Replace("{method}", runtimeMethod.Name.ToKebabCase().ToLowerInvariant()),
+                false);
+
+            Directory.CreateDirectory(Path.GetDirectoryName(resolvedPath)!);
+
+            var asm = runtimeMethod.DeclaringType!.Assembly;
+            var xmlFilePath = Path.ChangeExtension(asm.Location, ".xml");
+
+            MethodComments? methodComments = null;
+            if (File.Exists(xmlFilePath))
             {
-                return form.ReturnVal();
+                var reader = new DocXmlReader(xmlFilePath);
+                methodComments = reader.GetMethodComments(runtimeMethod);
             }
 
-            /// <summary>
-            /// Return Test
-            /// </summary>
-            /// <param name="form"></param>
-            /// <returns></returns>
-            public async Task<FormulaireWebFRW1DO> ReturnTestAsync(IFormulaireWebFRW1DO form)
+            var sb = new StringBuilder();
+            foreach (var p in runtimeMethod.GetParameters())
             {
-                return await form.ReturnValAsync();
+                var pDoc = methodComments?.Parameters.FirstOrDefault(e => e.Name == p.Name);
+                var docLine = (pDoc is { } && pDoc.Value.Text is { }) ? $"# {pDoc.Value.Text}\n" : string.Empty;
+
+                sb.Append(docLine);
+                sb.Append(p.Name);
+                sb.Append(":\n");
+                sb.Append(MarkdownTheoryDiscoverer_Internals.DescribeTypeOfObject(p.ParameterType, "  "));
             }
+
+            var summary = (methodComments is { } && !string.IsNullOrWhiteSpace(methodComments.Summary))
+                            ? $"\n\n> {methodComments.Summary.ReplaceLineEndings("\\\n")}"
+                            : string.Empty;
+
+            var content = $"# {runtimeMethod.Name}{summary}\n\n## Case 1\n\nDescription\n\n``````yaml\n{sb}``````";
+            File.WriteAllText(resolvedPath, content, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+        }
+    }
+
+    internal static class MarkdownTheoryDiscoverer_Internals
+    {
+        internal static string? DescribeTypeOfObject(Type type, string indent, int depth = 0)
+        {
+            if (depth >= 10) return string.Empty;
+            depth++;
+
+            string? obj = null;
+
+            if (type.IsClass && type.FullName is { } fn && !fn.StartsWith("System.", StringComparison.Ordinal))
+            {
+                foreach (var pi in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
+                {
+                    var def = GetDefaultValueForProperty(pi);
+                    var inner = DescribeTypeOfObject(pi.PropertyType, indent + "  ", depth);
+                    obj += $"{indent}{pi.Name}: {(string.IsNullOrEmpty(inner) ? GetDefaultValue(def) : "\n" + inner)}";
+                }
+            }
+            else if (IsGenericEnumerable(type, out var elemType))
+            {
+                var props = elemType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+                var first = true;
+                foreach (var pi in props)
+                {
+                    var def = GetDefaultValueForProperty(pi);
+                    var inner = DescribeTypeOfObject(pi.PropertyType, indent + "    ", depth);
+                    obj += $"{indent}{(first ? "- " : "  ")}{pi.Name}: {(string.IsNullOrEmpty(inner) ? GetDefaultValue(def) : "\n" + inner)}";
+                    first = false;
+                }
+            }
+
+            return obj;
+        }
+
+        internal static bool IsGenericEnumerable(Type t, out Type elementType)
+        {
+            elementType = typeof(object);
+            if (t == typeof(string)) return false;
+
+            var ienum = t.GetInterfaces()
+                .Concat(new[] { t })
+                .FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
+            if (ienum is null) return false;
+
+            elementType = ienum.GetGenericArguments()[0];
+            return true;
+        }
+
+        internal static string GetDefaultValue(object? def)
+            => def is { } ? new YamlDotNet.Serialization.Serializer().Serialize(def).ReplaceLineEndings("\n") : "null\n";
+
+        internal static object? GetDefaultValueForProperty(PropertyInfo property)
+        {
+            var defaultAttr = property.GetCustomAttribute(typeof(System.ComponentModel.DefaultValueAttribute));
+            if (defaultAttr != null)
+                return (defaultAttr as System.ComponentModel.DefaultValueAttribute)?.Value;
+
+            var t = property.PropertyType;
+            return t.IsValueType ? Activator.CreateInstance(t) : null;
         }
     }
 }

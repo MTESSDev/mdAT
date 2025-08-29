@@ -1,17 +1,17 @@
-﻿using System.Reflection;
-using System.Text.RegularExpressions;
-using YamlDotNet.Serialization;
-using MDAT.Resolver;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Globalization;
+﻿using MDAT.Resolver;
 using Newtonsoft.Json;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+using System.Reflection;
+using System.Text.RegularExpressions;
+using Xunit.Sdk;
+using YamlDotNet.Serialization;
 
 namespace MDAT
 {
     [ExcludeFromCodeCoverage]
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-    public class YamlFileDataAttribute : Attribute, ITestDataSource
+    public class YamlFileDataAttribute : DataAttribute
     {
         private readonly string _filePath;
         private readonly string _propertyName;
@@ -24,7 +24,7 @@ namespace MDAT
         }
          
         /// <inheritDoc />
-        public IEnumerable<object[]> GetData(MethodInfo testMethod)
+        public override IEnumerable<object[]> GetData(MethodInfo testMethod)
         {
             if (testMethod == null) { throw new ArgumentNullException(nameof(testMethod)); }
 

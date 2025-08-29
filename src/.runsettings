@@ -2,7 +2,7 @@
 <RunSettings>
   <DataCollectionRunSettings>
     <DataCollectors>
-      <DataCollector friendlyName="XPlat code coverage">
+      <DataCollector friendlyName="XPlat Code Coverage">
         <Configuration>
           <Format>cobertura</Format>
           <Include>MDAT</Include>
@@ -10,4 +10,9 @@
       </DataCollector>
     </DataCollectors>
   </DataCollectionRunSettings>
+  <xunit>
+    <DiagnosticMessages>true</DiagnosticMessages>
+    <InternalDiagnosticMessages>true</InternalDiagnosticMessages>
+    <TestTimeout>60000</TestTimeout>
+  </xunit>
 </RunSettings>

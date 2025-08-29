@@ -1,10 +1,9 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace MDAT.Tests
 {
-    //[TestClass]
-    [ExcludeFromCodeCoverage]
+
+    /*[ExcludeFromCodeCoverage]
     public class YamlFileDataAttributeTests
     {
         [TestMethod]
@@ -20,6 +19,6 @@ namespace MDAT.Tests
         {
             return val1 + val2;
         }
-    }
+    }*/
 
 }

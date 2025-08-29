@@ -1,31 +1,25 @@
-﻿using MDATTests;
-using MDATTests.Models;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.AspNetCore.Mvc;
 using Moq;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq.Expressions;
-using System.Reflection;
+using Xunit;
 
 namespace MDAT.Tests
 {
     /// <summary>
     /// Ignored comment
     /// </summary>
-    [TestClass]
     public class AssertTests
     {
         /// <summary>
         /// Run without expected obj
         /// </summary>
-        [TestMethod]
+        [Fact]
         public async Task Test_no_expected()
         {
             object value = await Verify.Assert(() =>
                                         Task.FromResult((object)null!), (Expected)null!);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Test_numeric()
         {
             object value = await Verify.Assert(() =>
@@ -35,7 +29,7 @@ namespace MDAT.Tests
         /// <summary>
         /// Run without expected obj
         /// </summary>
-        [TestMethod]
+        [Fact]
         public async Task Test_expected_data_is_string()
         {
             object value = await Verify.Assert(() =>
@@ -45,7 +39,7 @@ namespace MDAT.Tests
         /// <summary>
         /// Test Stream output
         /// </summary>
-        [TestMethod]
+        [Fact]
         public async Task Test_stream_output_as_base64()
         {
             var memory = new MemoryStream(new byte[] { 0x01, 0x02, 0x03, 0x04 });
@@ -57,7 +51,7 @@ namespace MDAT.Tests
         /// <summary>
         /// Test Stream output
         /// </summary>
-        [TestMethod]
+        [Fact]
         public async Task Test_stream_output_as_base64_result()
         {
             var mockTest = new Mock<IDemoResult>();
