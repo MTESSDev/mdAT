@@ -15,6 +15,10 @@
   </PropertyGroup>
 
 	<PropertyGroup>
+		<IsTestProject>false</IsTestProject>
+	</PropertyGroup>
+
+	<PropertyGroup>
 		<DocumentationFile>obj\$(Configuration)\YamlHttpClient.xml</DocumentationFile>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageLicenseFile>LICENSE</PackageLicenseFile>
@@ -30,6 +34,7 @@
 	    <PackagePath>\</PackagePath>
 	  </None>
 	</ItemGroup>
+	
     
   <ItemGroup>
     <PackageReference Include="LoxSmoke.DocXml" Version="3.6.1" />
