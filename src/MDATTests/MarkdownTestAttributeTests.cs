@@ -1,5 +1,6 @@
 ﻿using MDATTests;
 using MDATTests.Models;
+using Microsoft.Extensions.Primitives;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System;
@@ -393,6 +394,17 @@ namespace MDAT.Tests
         {
 
             object value = await Verify.Assert(() =>
+                                        Task.FromResult(input), expected);
+        }
+
+        /// <summary>
+        /// Test StringValues
+        /// </summary>
+        [TestMethod]
+        [MarkdownTest("~\\Tests\\{method}.md")]
+        public async Task Test_StringValues(StringValues input, Expected expected)
+        {
+            _ = await Verify.Assert(() =>
                                         Task.FromResult(input), expected);
         }
 

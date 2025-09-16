@@ -223,6 +223,7 @@ namespace MDAT
               .WithTypeConverter(new ByteArayConverter(), e => e.OnBottom())
               .WithTypeConverter(new SystemTextJsonYamlTypeConverter())
               .WithTypeInspector(x => new SystemTextJsonTypeInspector(x))
+              .WithTypeConverter(new StringValuesConverter())
               .WithNodeTypeResolver(resolver)
               .WithNodeDeserializer(new KeyValuePairNodeDeserializer())
               .IgnoreUnmatchedProperties()
