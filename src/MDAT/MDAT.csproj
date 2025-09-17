@@ -36,7 +36,7 @@
     <PackageReference Include="Markdig" Version="0.37.0" />
     <PackageReference Include="Microsoft.Extensions.Primitives" Version="2.2.0" />
     <PackageReference Include="Moq" Version="4.18.4" />
-    <PackageReference Include="MSTest.TestFramework" Version="3.3.1" />
+    <PackageReference Include="MSTest.TestFramework" Version="3.10.4" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Quibble.Xunit" Version="0.3.1" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.6" />
