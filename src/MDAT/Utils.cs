@@ -2,7 +2,6 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
-using Quibble.Xunit;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -84,14 +83,31 @@ public static class Extensions
             switch (match.Groups[2].Value)
             {
                 case ".length()":
-                    if (tokens.Count() == 1)
-                        if (tokens.FirstOrDefault()!.Type == JTokenType.String)
-                            finalData = tokens.ToString()!.Length.ToString();
+                    {
+                        var count = tokens.Count();
+
+                        if (count == 1)
+                        {
+                            var first = tokens.First()!;
+                            if (first.Type == JTokenType.String)
+                            {
+                                finalData = first.Value<string>()?.Length.ToString();
+                            }
+                            else if (first is JContainer cont)
+                            {
+                                finalData = cont.Count.ToString();
+                            }
+                            else
+                            {
+                                finalData = "1";
+                            }
+                        }
                         else
-                            finalData = tokens.Children().Count().ToString();
-                    else
-                        finalData = tokens.Count().ToString();
-                    break;
+                        {
+                            finalData = count.ToString();
+                        }
+                        break;
+                    }
                 default:
                     throw new InvalidOperationException($"Invalid verb '{match.Groups[2].Value}'");
             }
@@ -99,9 +115,9 @@ public static class Extensions
         else
         {
             if (tokens.Count() == 1)
-                finalData = HandleValue(tokens?.FirstOrDefault());
+                finalData = HandleValue(tokens.First());
             else
-                finalData = HandleValue(JToken.FromObject(tokens));
+                finalData = HandleValue(JArray.FromObject(tokens.ToArray()));
 
             finalData = DataAdapter(finalData, finalData)?.ToString();
         }

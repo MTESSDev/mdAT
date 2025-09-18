@@ -1,105 +1,71 @@
 ﻿using MDAT.Resolver;
 using Newtonsoft.Json;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using Xunit.Sdk;
 using YamlDotNet.Serialization;
 
-namespace MDAT
+namespace MDAT;
+
+[ExcludeFromCodeCoverage]
+[AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
+public sealed class YamlFileDataAttribute : Attribute, ITestDataProvider
 {
-    [ExcludeFromCodeCoverage]
-    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-    public class YamlFileDataAttribute : DataAttribute
+    private readonly string _filePath;
+    private readonly Dictionary<int, string> _displayNames = new();
+
+    public YamlFileDataAttribute(string filePath) => _filePath = filePath;
+
+    public IEnumerable<object?[]> GetData(MethodInfo testMethod)
     {
-        private readonly string _filePath;
-        private readonly string _propertyName;
+        if (testMethod is null) throw new ArgumentNullException(nameof(testMethod));
 
-        private Dictionary<int, string> displayNames = new Dictionary<int, string>();
+        // Résolution de chemin: relatif à l’assembly de test
+        var asmDir = Path.GetDirectoryName(testMethod.DeclaringType!.Assembly.Location)!;
+        var candidate = _filePath.Replace("~\\", "..\\..\\..\\"); // compat si tu l’utilisais
+        var path = Path.IsPathRooted(candidate)
+            ? candidate
+            : Path.GetFullPath(Path.Combine(asmDir, candidate));
 
-        public YamlFileDataAttribute(string filePath)
+        if (!File.Exists(path))
+            throw new FileNotFoundException($"Could not find file at path: {path}");
+
+        var fileData = File.ReadAllText(path);
+
+        // Split multi-docs: --- (en début de ligne)
+        var docs = Regex.Split(fileData, @"^---", RegexOptions.Multiline);
+        var all = new List<object?[]>();
+
+        foreach (var doc in docs)
         {
-            _filePath = filePath;
-        }
-         
-        /// <inheritDoc />
-        public override IEnumerable<object[]> GetData(MethodInfo testMethod)
-        {
-            if (testMethod == null) { throw new ArgumentNullException(nameof(testMethod)); }
+            if (string.IsNullOrWhiteSpace(doc)) continue;
 
-            var path = _filePath.Replace("~\\", "..\\..\\..\\");
+            var deser = NewDeserializer(testMethod);
+            var dict = deser.Deserialize<Dictionary<string, object?>>("---\n" + doc);
+            if (dict is null) continue;
 
-            // Get the absolute path to the JSON file
-            path = Path.IsPathRooted(path)
-                    ? path
-                    : Path.GetRelativePath(Directory.GetCurrentDirectory(), path);
+            var arr = dict.Values.ToArray();
+            _displayNames[arr.GetHashCode()] = $"{testMethod.Name}@{_filePath}";
 
-            if (!File.Exists(path))
-            {
-                throw new Exception($"Could not find file at path: {path}");
-            }
-
-            // Load the file
-            var fileData = File.ReadAllText(path);
-
-            if (string.IsNullOrEmpty(_propertyName))
-            {
-                IEnumerable<object[]> retour;
-
-                var docs = Regex.Split(fileData, @"^---", RegexOptions.Multiline);
-
-                List<object[]> to = new List<object[]>();
-
-
-                foreach (var doc in docs)
-                {
-                    if (string.IsNullOrWhiteSpace(doc)) continue;
-
-
-                    IDeserializer deserializer = NewDeserilizer(testMethod);
-
-                    var ggs = deserializer.Deserialize<Dictionary<string, object>>("---\n" + doc);
-
-                    if (ggs is null) continue;
-
-                    var arr = ggs.Values.ToArray();
-
-                    displayNames.Add(arr.GetHashCode(), "Nom " + arr[0]);
-
-                    to.Add(arr);
-                }
-
-
-                return to;
-
-            }
-
-            return null;
+            all.Add(arr);
         }
 
-        private static IDeserializer NewDeserilizer(MethodInfo testMethod)
-        {
-            IDeserializer deserializer = new DeserializerBuilder()
-              .WithNodeTypeResolver(new MDATYamlTypeResolver(testMethod))
-              .WithTypeConverter(new ByteArayConverter())
-              .WithAttemptingUnquotedStringTypeDeserialization()
-              .IgnoreUnmatchedProperties()
-              .Build();
-            return deserializer;
-        }
-
-        public string? GetDisplayName(MethodInfo methodInfo, object?[]? data)
-        {
-            var parameters = methodInfo.GetParameters();
-
-            if (data != null)
-            {
-                var name = displayNames[data.GetHashCode()];
-                return $"{methodInfo.Name}@{_filePath}_#{JsonConvert.SerializeObject(data)}";
-            }
-
-            return null;
-        }
+        return all;
     }
+
+    public string? GetDisplayName(MethodInfo methodInfo, object?[]? data)
+    {
+        if (data is null) return null;
+        if (_displayNames.TryGetValue(data.GetHashCode(), out var baseName))
+            return $"{baseName}_#{JsonConvert.SerializeObject(data)}";
+        return null;
+    }
+
+    private static IDeserializer NewDeserializer(MethodInfo testMethod)
+        => new DeserializerBuilder()
+           .WithNodeTypeResolver(new MDATYamlTypeResolver(testMethod))
+           .WithTypeConverter(new ByteArayConverter())
+           .WithAttemptingUnquotedStringTypeDeserialization()
+           .IgnoreUnmatchedProperties()
+           .Build();
 }

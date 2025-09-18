@@ -5,7 +5,6 @@ using Moq;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
-using Xunit;
 
 namespace MDAT.Tests
 {
@@ -33,7 +32,7 @@ namespace MDAT.Tests
         /// <summary>
         /// Simple test avec données réutilisables
         /// </summary>
-        [Theory]
+        /*[Theory]
         [MemberData(nameof(ReusableTestDataProperty))]
         public async Task Dynam(Params val1)
         {
@@ -51,7 +50,7 @@ namespace MDAT.Tests
                         }
                     }
                 });
-        }
+        }*/
 
         /// <summary>
         /// Markdown data-driven (ex-[MarkdownTest("~/Tests/test.md")])

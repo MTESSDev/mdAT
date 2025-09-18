@@ -37,13 +37,13 @@
 	
     
   <ItemGroup>
+	  <PackageReference Include="Microsoft.TestPlatform.ObjectModel" Version="17.10.0" />
     <PackageReference Include="LoxSmoke.DocXml" Version="3.6.1" />
     <PackageReference Include="Markdig" Version="0.37.0" />
+    <PackageReference Include="Microsoft.TestPlatform.ObjectModel" Version="17.14.1" />
     <PackageReference Include="Moq" Version="4.18.4" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="Quibble.Xunit" Version="0.3.1" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.6" />
-    <PackageReference Include="xunit" Version="2.9.3" />
     <PackageReference Include="YamlDotNet" Version="16.2.1" />
     <PackageReference Include="YamlDotNet.System.Text.Json" Version="1.6.4" />
   </ItemGroup>
