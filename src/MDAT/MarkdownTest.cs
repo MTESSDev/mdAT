@@ -230,6 +230,11 @@ namespace MDAT
               .WithAttemptingUnquotedStringTypeDeserialization()
               .WithTagMapping(MdatConstants.IncludeTag, typeof(IncludeRef));
 
+            foreach(var typeConverter in MdatConfig.ListeTypeConverter)
+            {
+                _ = typeConverter.Where is { } ? deserializer.WithTypeConverter(typeConverter.TypeConverter!, typeConverter.Where) : deserializer.WithTypeConverter(typeConverter.TypeConverter!);
+            }
+
             var includeNodeDeserializerOptions = new YamlIncludeNodeDeserializerOptions
             {
                 DirectoryName = directoryName,
