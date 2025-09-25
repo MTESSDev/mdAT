@@ -1,6 +1,6 @@
 ﻿# Test_AddYamlTypeConverter
 
-> Test StringValuesTestYamlTypeConverter
+> Test AddYamlTypeConverter
 
 ## Case 1
 

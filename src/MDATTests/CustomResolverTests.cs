@@ -11,10 +11,10 @@ public class CustomResolverTests
     public static void ClassInitialize(TestContext testContext)
     {
         MdatConfig.AddYamlTypeConverter(new StringValuesTestYamlTypeConverter());
-    } 
+    }
 
     /// <summary>
-    /// Test StringValuesTestYamlTypeConverter
+    /// Test AddYamlTypeConverter
     /// </summary>
     [TestMethod]
     [MarkdownTest("~\\Tests\\{method}.md")]
