@@ -4,7 +4,6 @@ using Microsoft.Extensions.Primitives;
 
 [assembly: Parallelize(Workers = 0, Scope = ExecutionScope.MethodLevel)]
 
-
 namespace MDAT.Tests;
 
 [TestClass]
