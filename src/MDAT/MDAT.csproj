@@ -44,9 +44,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="YamlDotNet.System.Text.Json" Version="1.6.3" Condition="'$(TargetFramework)' == 'net6.0'" />
-    <PackageReference Include="YamlDotNet.System.Text.Json" Version="1.6.3" Condition="'$(TargetFramework)' == 'net7.0'" />
-    <PackageReference Include="YamlDotNet.System.Text.Json" Version="1.6.3" Condition="'$(TargetFramework)' == 'net8.0'" />
+    <PackageReference Include="YamlDotNet.System.Text.Json" Version="1.5.1" Condition="'$(TargetFramework)' == 'net6.0'" />
+    <PackageReference Include="YamlDotNet.System.Text.Json" Version="1.5.1" Condition="'$(TargetFramework)' == 'net7.0'" />
+    <PackageReference Include="YamlDotNet.System.Text.Json" Version="1.5.1" Condition="'$(TargetFramework)' == 'net8.0'" />
     <PackageReference Include="YamlDotNet.System.Text.Json" Version="1.6.4" Condition="'$(TargetFramework)' == 'net9.0'" />
   </ItemGroup>
 
