@@ -223,11 +223,17 @@ namespace MDAT
               .WithTypeConverter(new ByteArayConverter(), e => e.OnBottom())
               .WithTypeConverter(new SystemTextJsonYamlTypeConverter())
               .WithTypeInspector(x => new SystemTextJsonTypeInspector(x))
+              .WithTypeConverter(new StringValuesConverter())
               .WithNodeTypeResolver(resolver)
               .WithNodeDeserializer(new KeyValuePairNodeDeserializer())
               .IgnoreUnmatchedProperties()
               .WithAttemptingUnquotedStringTypeDeserialization()
               .WithTagMapping(MdatConstants.IncludeTag, typeof(IncludeRef));
+
+            foreach(var typeConverter in MdatConfig.ListeTypeConverter)
+            {
+                _ = typeConverter.Where is { } ? deserializer.WithTypeConverter(typeConverter.TypeConverter!, typeConverter.Where) : deserializer.WithTypeConverter(typeConverter.TypeConverter!);
+            }
 
             var includeNodeDeserializerOptions = new YamlIncludeNodeDeserializerOptions
             {
