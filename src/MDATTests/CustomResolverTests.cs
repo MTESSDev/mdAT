@@ -2,7 +2,7 @@
 using MDATTests.Resolver;
 using Microsoft.Extensions.Primitives;
 
-namespace MDATTests;
+namespace MDAT.Tests;
 
 [TestClass]
 public class CustomResolverTests
