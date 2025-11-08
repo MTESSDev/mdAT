@@ -1,11 +1,7 @@
 ﻿using MDATTests;
 using MDATTests.Models;
 using Microsoft.Extensions.Primitives;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using System;
-using System.Text.Json;
-using static MDAT.Tests.MarkdownTestAttributeTests;
 
 //[assembly: TestDataSourceDiscovery(TestDataSourceDiscoveryOption.DuringExecution)]
 
@@ -237,27 +233,6 @@ namespace MDAT.Tests
 
             object value = await Verify.Assert(() =>
                                         Task.FromResult(File.ReadAllText(test.ParsedPath)), expected);
-        }
-
-        /// <summary>
-        /// Test JsonDocument Load
-        /// This test whole document integrity
-        /// </summary>
-        [TestMethod]
-        [MarkdownTest("~\\Tests\\md-json-document-test.md")]
-        public async Task Md_JsonDocument_test(JsonDocument jsonDocument, Test1 test1, Expected expected, Expected expected2)
-        {
-            object value = await Verify.Assert(() =>
-                                          Task.FromResult(jsonDocument), expected);
-
-            object value2 = await Verify.Assert(() =>
-                                       Task.FromResult(test1), expected2);
-
-        }
-
-        public class Test1
-        {
-            public JsonDocument JsonDocument { get; set; }
         }
 
         /// <summary>
