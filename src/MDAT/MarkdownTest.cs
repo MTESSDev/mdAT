@@ -2,13 +2,11 @@
 using Markdig;
 using Markdig.Syntax;
 using MDAT.Resolver;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.ComponentModel;
 using System.Reflection;
 using System.Text;
 using YamlDotNet.Core;
 using YamlDotNet.Serialization;
-using YamlDotNet.System.Text.Json;
 
 namespace MDAT
 {
@@ -221,8 +219,8 @@ namespace MDAT
         {
             DeserializerBuilder deserializer = new DeserializerBuilder()
               .WithTypeConverter(new ByteArayConverter(), e => e.OnBottom())
-              .WithTypeConverter(new SystemTextJsonYamlTypeConverter())
-              .WithTypeInspector(x => new SystemTextJsonTypeInspector(x))
+              .WithTypeConverter(new SystemTextJsonYamlTypeConverter(false, true))
+              .WithTypeInspector(x => new YamlDotNet.System.Text.Json.SystemTextJsonTypeInspector(x))
               .WithTypeConverter(new StringValuesConverter())
               .WithNodeTypeResolver(resolver)
               .WithNodeDeserializer(new KeyValuePairNodeDeserializer())
@@ -230,7 +228,7 @@ namespace MDAT
               .WithAttemptingUnquotedStringTypeDeserialization()
               .WithTagMapping(MdatConstants.IncludeTag, typeof(IncludeRef));
 
-            foreach(var typeConverter in MdatConfig.ListeTypeConverter)
+            foreach (var typeConverter in MdatConfig.ListeTypeConverter)
             {
                 _ = typeConverter.Where is { } ? deserializer.WithTypeConverter(typeConverter.TypeConverter!, typeConverter.Where) : deserializer.WithTypeConverter(typeConverter.TypeConverter!);
             }
