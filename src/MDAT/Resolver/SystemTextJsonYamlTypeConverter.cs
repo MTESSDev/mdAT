@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using YamlDotNet.Core;
@@ -11,6 +12,7 @@ namespace MDAT.Resolver;
 /// <summary>
 /// Allows YamlDotNet to de/serialize System.Text.Json objects
 /// </summary>
+[ExcludeFromCodeCoverage]
 public sealed class SystemTextJsonYamlTypeConverter : IYamlTypeConverter
 {
     private bool SortKeysAlphabetically { get; }
