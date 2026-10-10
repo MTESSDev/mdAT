@@ -36,6 +36,26 @@
                 "${workspaceFolder}/src/MDAT.Core/MDAT.Core.csproj"
             ],
             "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "Run MDAT tests (net8)",
+            "type": "shell",
+            "command": "dotnet",
+            "args": [
+                "run",
+                "--project",
+                "src/MDAT.Tests/MDAT.Tests.csproj",
+                "-f",
+                "net8.0"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            },
+            "problemMatcher": []
         }
     ]
 }

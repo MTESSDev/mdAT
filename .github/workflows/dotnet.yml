@@ -1,5 +1,8 @@
 # This workflow will build and test the .NET projects, and pack the NuGet packages
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
+#
+# The tests run on Microsoft Testing Platform (MTP): `dotnet test` is switched to MTP mode by the "test" section of
+# global.json (the .NET 10 SDK is needed), and the reports (TRX, code coverage) are produced by MTP extensions.
 
 name: .NET
 
@@ -47,23 +50,34 @@ jobs:
     - name: Build
       run: dotnet build --no-restore
 
-    # The test project is a TUnit executable (Microsoft Testing Platform): it is run, one target framework at a time
+    # One target framework at a time. Every run keeps going when the one before it failed, so that all the failures show up,
+    # and the job still fails at the end. The reports go to TestResults/<framework> (at the root of the repository).
     - name: Test (net8.0)
-      run: dotnet run --project MDAT.Tests --no-build -f net8.0
+      run: dotnet test --solution MDAT.slnx --no-build --framework net8.0 --results-directory ../TestResults/net8.0 --report-trx
     - name: Test (net9.0)
-      run: dotnet run --project MDAT.Tests --no-build -f net9.0
+      if: ${{ !cancelled() }}
+      run: dotnet test --solution MDAT.slnx --no-build --framework net9.0 --results-directory ../TestResults/net9.0 --report-trx
     - name: Test (net10.0)
-      if: runner.os != 'Linux'
-      run: dotnet run --project MDAT.Tests --no-build -f net10.0
+      if: ${{ !cancelled() && runner.os != 'Linux' }}
+      run: dotnet test --solution MDAT.slnx --no-build --framework net10.0 --results-directory ../TestResults/net10.0 --report-trx
     - name: Test (net10.0, with code coverage)
-      if: runner.os == 'Linux'
-      run: dotnet run --project MDAT.Tests --no-build -f net10.0 -- --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml
+      if: ${{ !cancelled() && runner.os == 'Linux' }}
+      run: dotnet test --solution MDAT.slnx --no-build --framework net10.0 --results-directory ../TestResults/net10.0 --report-trx --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml
+
+    # The TRX reports of the Microsoft Testing Platform and the coverage, kept even when a test fails
+    - name: Upload test results
+      if: ${{ !cancelled() }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-results-${{ matrix.os }}
+        path: TestResults/**
+        if-no-files-found: error
 
     - name: Code Coverage Report
       if: runner.os == 'Linux'
       uses: irongut/CodeCoverageSummary@v1.3.0
       with:
-        filename: src/MDAT.Tests/bin/Debug/net10.0/TestResults/coverage.cobertura.xml
+        filename: TestResults/net10.0/coverage.cobertura.xml
         badge: true
         fail_below_min: true
         format: markdown
