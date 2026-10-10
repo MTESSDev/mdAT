@@ -123,6 +123,13 @@ public static class MarkdownSourceLink
 
     private static bool UpdateFile(string markdown, List<SourceLinkEntry> entries)
     {
+        // A read-only file is left alone. This is checked on purpose: the file is replaced by renaming a new one over it, which
+        // fails on Windows but silently succeeds on Linux, where only the permissions of the folder count.
+        if ((File.GetAttributes(markdown) & FileAttributes.ReadOnly) != 0)
+        {
+            return false;
+        }
+
         var bytes = File.ReadAllBytes(markdown);
 
         // UTF-16 files are not handled: left untouched
