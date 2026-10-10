@@ -1,5 +1,7 @@
 # External_file_base64
 
+> C# : [MarkdownTestAttributeTests.cs:124](../MarkdownTestAttributeTests.cs#L124) <!-- mdat:MarkdownTestAttributeTests.cs#MarkdownTestAttributeTests.External_file_base64 -->
+
 > External file include base64
 
 ## Case 1

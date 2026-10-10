@@ -37,7 +37,7 @@ public class YamlFileDataSourceAttribute : Attribute, IDataSourceAttribute, ITes
 
         foreach (var testCase in new YamlFileTestSource(_filePath).GetCases(method))
         {
-            yield return TestCaseLocations.ToRow(testCase);
+            yield return TestCaseLocations.ToRow(testCase, dataGeneratorMetadata.TestInformation.Class.Type);
         }
     }
 }

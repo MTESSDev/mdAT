@@ -1,5 +1,7 @@
 # Json_document_with_a_json_string_root
 
+> C# : [JsonDocumentRegressionTests.cs:29](../JsonDocumentRegressionTests.cs#L29) <!-- mdat:JsonDocumentRegressionTests.cs#JsonDocumentRegressionTests.Json_document_with_a_json_string_root -->
+
 > Regression: a JsonDocument whose root is a string holding JSON text is expected as a YAML object (mdAT 1.4 behaviour).
 
 ## String root holding a JSON object

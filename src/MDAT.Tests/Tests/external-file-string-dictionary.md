@@ -1,5 +1,7 @@
 # External_file_string_dictionary
 
+> C# : [MarkdownTestAttributeTests.cs:164](../MarkdownTestAttributeTests.cs#L164) <!-- mdat:MarkdownTestAttributeTests.cs#MarkdownTestAttributeTests.External_file_string_dictionary -->
+
 > External file include byte[] dictionary
 
 ## Case 1

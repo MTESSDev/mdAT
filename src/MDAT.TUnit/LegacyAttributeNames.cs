@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+
 namespace MDAT;
 
 /// <summary>
@@ -7,7 +9,8 @@ namespace MDAT;
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
 public sealed class MarkdownTestAttribute : MarkdownDataSourceAttribute
 {
-    public MarkdownTestAttribute(string filePath) : base(filePath)
+    public MarkdownTestAttribute(string filePath, [CallerFilePath] string sourceFilePath = "", [CallerLineNumber] int sourceLine = 0)
+        : base(filePath, sourceFilePath, sourceLine)
     {
     }
 }

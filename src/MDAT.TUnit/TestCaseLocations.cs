@@ -9,13 +9,16 @@ namespace MDAT;
 /// </summary>
 internal static class TestCaseLocations
 {
+    // The display name no longer holds the path of the file: the test class keeps two classes apart
     private static readonly ConcurrentDictionary<string, (string File, int Line)> ByDisplayName = new(StringComparer.Ordinal);
 
-    public static Func<Task<object?[]?>> ToRow(MarkdownTestCase testCase)
+    private static string Key(Type? testClass, string displayName) => $"{testClass?.FullName}|{displayName}";
+
+    public static Func<Task<object?[]?>> ToRow(MarkdownTestCase testCase, Type testClass)
     {
         if (!string.IsNullOrEmpty(testCase.FilePath) && testCase.Line > 0)
         {
-            ByDisplayName[testCase.DisplayName] = (testCase.FilePath, testCase.Line);
+            ByDisplayName[Key(testClass, testCase.DisplayName)] = (testCase.FilePath, testCase.Line);
         }
 
         var row = new TestDataRow<object?[]>(testCase.Arguments, DisplayName: testCase.DisplayName);
@@ -26,7 +29,7 @@ internal static class TestCaseLocations
     /// <summary>Gives the discovered test the file and the line of its case, when it comes from a data source of mdAT.</summary>
     public static void Apply(DiscoveredTestContext context)
     {
-        if (ByDisplayName.TryGetValue(context.GetDisplayName(), out var location))
+        if (ByDisplayName.TryGetValue(Key(context.TestDetails.ClassType, context.GetDisplayName()), out var location))
         {
             context.TestDetails.TestFilePath = location.File;
             context.TestDetails.TestLineNumber = location.Line;

@@ -1,4 +1,4 @@
-using MDAT.Resolver;
+﻿using MDAT.Resolver;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using YamlDotNet.Serialization;
@@ -58,7 +58,7 @@ public sealed class YamlFileTestSource
 
             var arguments = values.Values.ToArray();
 
-            cases.Add(new MarkdownTestCase(arguments, $"{testMethod.Name}@{_filePath}_#{cases.Count + 1}", fullPath, LineOf(fileData, separatorStart)));
+            cases.Add(new MarkdownTestCase(arguments, $"{testMethod.Name}_#{cases.Count + 1}@{Path.GetFileName(path)}", fullPath, LineOf(fileData, separatorStart)));
         }
 
         return cases;

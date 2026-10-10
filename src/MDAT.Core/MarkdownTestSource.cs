@@ -56,10 +56,7 @@ namespace MDAT
         /// </summary>
         public IReadOnlyList<MarkdownTestCase> GetCases(MethodInfo testMethod)
         {
-            if (testMethod == null) { throw new ArgumentNullException(nameof(testMethod)); }
-
-            _filePath = _filePath.Replace("{method}", testMethod.Name.ToKebabCase().ToLower());
-            ParsedPath = Extensions.GetCurrentPath(_filePath, false);
+            ResolvePath(testMethod);
 
             if (!File.Exists(ParsedPath))
             {
@@ -70,6 +67,20 @@ namespace MDAT
             var to = LoadMarkdownFile(testMethod);
 
             return to;
+        }
+
+        /// <summary>
+        /// Works out the markdown file of <paramref name="testMethod"/> (<c>{method}</c> becomes the name of the method) without
+        /// reading it, and returns its path (also available as <see cref="ParsedPath"/>).
+        /// </summary>
+        public string ResolvePath(MethodInfo testMethod)
+        {
+            if (testMethod == null) { throw new ArgumentNullException(nameof(testMethod)); }
+
+            _filePath = _filePath.Replace("{method}", testMethod.Name.ToKebabCase().ToLower());
+            ParsedPath = Extensions.GetCurrentPath(_filePath, false);
+
+            return ParsedPath;
         }
 
         private List<MarkdownTestCase> LoadMarkdownFile(MethodInfo testMethod)
@@ -125,8 +136,18 @@ namespace MDAT
 
         private string DisplayName(MethodInfo testMethod, string?[] headings)
         {
-            return $"{testMethod.Name}@{_filePath}_{string.Join("_", headings.Where(h => !string.IsNullOrWhiteSpace(h)))}";
+            // Method_Title_Sub title@file.md: the file name comes last, as it is the same for every case of the method.
+            // A title that only repeats the name of the method (the generated files start with "# MethodName") adds nothing.
+            var methodKey = Normalize(testMethod.Name);
+            var titles = headings.Where(h => !string.IsNullOrWhiteSpace(h) && Normalize(h) != methodKey);
+
+            var name = string.Join("_", new[] { testMethod.Name }.Concat(titles!));
+
+            return $"{name}@{Path.GetFileName(ParsedPath)}";
         }
+
+        /// <summary>Letters and digits only, in lower case: "Md Extraction-test" and "Md_Extraction_test" are the same title.</summary>
+        private static string Normalize(string? text) => new string((text ?? "").Where(char.IsLetterOrDigit).ToArray()).ToLowerInvariant();
 
         /// <summary>Line of the deepest title above the case (the one that ends its display name), or the line of its code block.</summary>
         private static int TitleLine(string?[] headings, int[] headingLines, int codeBlockLine)

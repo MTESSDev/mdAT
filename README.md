@@ -26,6 +26,25 @@ Modifiez votre fichier ``.md`` comme vous le souhaitez.
 
 Chaque cas du fichier Markdown devient un test distinct dans l'explorateur de tests, et son emplacement est son titre dans le fichier Markdown (ou le début de son document dans un fichier YAML), pas la méthode C# partagée par tous les cas. TUnit transmet cet emplacement à l'explorateur de tests, qui s'en sert pour « Aller à la source » (double-clic). Les arguments sont construits à partir du YAML et passés tels quels à votre méthode : aucune sérialisation intermédiaire, quel que soit leur type (`DateOnly`, `Dictionary<object, object>`, `JsonDocument`, ...).
 
+### Lien vers le test C# dans le fichier Markdown
+
+Chaque fichier Markdown garde, juste sous son titre, un lien vers le test C# qui le lit (Ctrl+clic pour y aller, avec la ligne) :
+
+```md
+# Md1
+
+> C# : [MarkdownTestAttributeTests.cs:49](../MarkdownTestAttributeTests.cs#L49) <!-- mdat:MarkdownTestAttributeTests.cs#Md1 -->
+```
+
+mdAT ajoute cette ligne et la corrige quand le test change de ligne, à chaque découverte des tests :
+
+- le lien est relatif au fichier Markdown, donc valable pour toute l'équipe ;
+- **le fichier n'est réécrit que si la ligne change** (même contenu, aucune écriture : la date de modification du fichier ne bouge pas) ;
+- le reste du fichier est conservé tel quel (encodage, BOM, fins de ligne) ;
+- le commentaire `<!-- mdat:... -->` identifie la ligne gérée par mdAT : vous pouvez écrire autour sans qu'elle soit perdue. Un fichier partagé par plusieurs tests garde une ligne par test ;
+- un fichier en lecture seule, ou dont le fichier C# est introuvable à ce chemin, est laissé tel quel, sans erreur ;
+- à la première exécution, **tous vos fichiers Markdown existants reçoivent cette ligne** : c'est un changement unique à relire puis à committer. Ensuite, un fichier ne change que si son test change de ligne.
+
 ````csharp
 using MDAT;
 
@@ -131,7 +150,7 @@ mdAT 2.0 abandonne MSTest au profit de TUnit. Les projets qui restent sur MSTest
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="TUnit" Version="1.73.19" />
-    <PackageReference Include="MDAT" Version="2.0.0-beta.3" />
+    <PackageReference Include="MDAT" Version="2.0.0-beta.5" />
   </ItemGroup>
 </Project>
 ```
@@ -195,7 +214,8 @@ Les autres changements portent sur les messages d'écart, qui sont plus précis 
 - les valeurs répétées dans un tableau sont toutes listées (Quibble en oubliait et pouvait produire un message vide) ;
 - les éléments de tableau sont appariés par valeur, pas par écriture (`1` et `1.0`), ni selon l'ordre des clés de leurs objets ;
 - `allowAdditionalProperties` s'applique aussi aux objets contenus dans des tableaux ;
-- le texte de l'exception change si votre code l'analysait (`MDAT.JsonAssertException` n'hérite plus d'une exception xunit).
+- le texte de l'exception change si votre code l'analysait (`MDAT.JsonAssertException` n'hérite plus d'une exception xunit) ;
+- le nom d'un cas de test est maintenant `Méthode_Titre_Sous titre@fichier.md` (nom du fichier à la fin) au lieu de `Méthode@~/chemin/fichier.md_Titre_Sous titre`. Les filtres sur ces noms et l'historique de vos tests (par exemple dans Azure DevOps) doivent être mis à jour.
 
 Sérialisation de `System.Text.Json` : un `JsonDocument` (ou un `JsonElement`) dont la racine est une **chaîne contenant un objet ou un tableau JSON** est écrit comme cet objet ou ce tableau, ce qui permet d'attendre un objet YAML dans `data:`. C'était le comportement de mdAT 1.4. mdAT 1.5.0 et 1.5.1 l'avaient changé par erreur en chaîne, ce qui obligeait à écrire l'attendu sous forme de chaîne JSON : la 2.0 rétablit le comportement de la 1.4. Les autres chaînes (`"hello"`, `"123"`, un texte qui n'est pas du JSON valide) restent des chaînes.
 
@@ -283,6 +303,25 @@ To use ``mdAT``, follow these steps:
 1. Enjoy!
 
 Each case of the markdown file is its own test in the test explorer, and its location is its title in the markdown file (or the start of its document in a YAML file), not the C# method shared by all the cases. TUnit hands this location to the test explorer, which uses it for "Go to source" (double click). Arguments are built from the YAML and handed as is to your method: no intermediate serialization, whatever their type (`DateOnly`, `Dictionary<object, object>`, `JsonDocument`, ...).
+
+### Link to the C# test in the markdown file
+
+Each markdown file keeps, right under its title, a link to the C# test that reads it (Ctrl+click to go there, to the line):
+
+```md
+# Md1
+
+> C# : [MarkdownTestAttributeTests.cs:49](../MarkdownTestAttributeTests.cs#L49) <!-- mdat:MarkdownTestAttributeTests.cs#Md1 -->
+```
+
+mdAT adds this line and corrects it when the test moves to another line, each time the tests are discovered:
+
+- the link is relative to the markdown file, so it is valid for the whole team;
+- **the file is written again only if the line changes** (same content, no write: the modification time of the file does not move);
+- the rest of the file is kept as it is (encoding, BOM, line endings);
+- the `<!-- mdat:... -->` comment identifies the line managed by mdAT: you can write around it without losing it. A file shared by several tests keeps one line per test;
+- a read-only file, or a file whose C# file cannot be found at that path, is left as it is, without any error;
+- on the first run, **all your existing markdown files get this line**: this is a one-time change to review and commit. After that, a file only changes when its test moves to another line.
 
 ````csharp
 using MDAT;
@@ -389,7 +428,7 @@ mdAT 2.0 drops MSTest in favour of TUnit. Projects staying on MSTest can keep us
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="TUnit" Version="1.73.19" />
-    <PackageReference Include="MDAT" Version="2.0.0-beta.3" />
+    <PackageReference Include="MDAT" Version="2.0.0-beta.5" />
   </ItemGroup>
 </Project>
 ```
@@ -453,7 +492,8 @@ The other changes concern the difference messages, which are more precise:
 - repeated values in an array are all listed (Quibble dropped some and could even produce an empty message);
 - array items are paired by value, not by spelling (`1` and `1.0`) nor by the key order of their objects;
 - `allowAdditionalProperties` also applies to objects held in arrays;
-- the exception text changes if your code parsed it (`MDAT.JsonAssertException` no longer derives from an xunit exception).
+- the exception text changes if your code parsed it (`MDAT.JsonAssertException` no longer derives from an xunit exception);
+- the name of a test case is now `Method_Title_Sub title@file.md` (file name last) instead of `Method@~/path/file.md_Title_Sub title`. Filters on these names and the history of your tests (for example in Azure DevOps) must be updated.
 
 `System.Text.Json` serialization: a `JsonDocument` (or a `JsonElement`) whose root is a **string holding a JSON object or array** is written as that object or array, so a YAML object can be expected in `data:`. This was the behaviour of mdAT 1.4. mdAT 1.5.0 and 1.5.1 changed it by mistake into a string, which forced the expected value to be written as a JSON string: 2.0 restores the 1.4 behaviour. Other strings (`"hello"`, `"123"`, text that is not valid JSON) stay strings.
 

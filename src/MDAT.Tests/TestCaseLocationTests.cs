@@ -39,11 +39,16 @@ public class TestCaseLocationTests
     [MarkdownDataSource("~/Tests/adapter-simple.md")]
     public async Task The_cases_of_a_file_have_different_lines(int a, string b)
     {
-        // the two cases of adapter-simple.md are on different lines: this test is run once per case
+        // The file is shared by three tests, each with its own link at the top: the link written for one of them must not
+        // move the lines found for another. Even on the very first run, the line of the case holds its title.
         var location = TestContext.Current!.Metadata.TestDetails.Location;
 
         await Assert.That(location.TestLineNumber).IsGreaterThan(0);
         await Assert.That(Path.GetFileName(location.TestFilePath)).IsEqualTo("adapter-simple.md");
+
+        var lines = await File.ReadAllLinesAsync(location.TestFilePath);
+
+        await Assert.That(lines[location.TestLineNumber - 1]).StartsWith("## Case");
         await Assert.That(b).IsNotNull();
         await Assert.That(a).IsGreaterThan(0);
     }

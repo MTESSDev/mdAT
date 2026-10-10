@@ -1,5 +1,7 @@
 # Array_order_is_ignored_when_the_test_case_asks_for_it
 
+> C# : [AdapterTests.cs:54](../AdapterTests.cs#L54) <!-- mdat:AdapterTests.cs#AdapterTests.Array_order_is_ignored_when_the_test_case_asks_for_it -->
+
 ## Case 1
 
 Same values, other order: passes because `ignoreArrayOrder` is declared on the verification step.

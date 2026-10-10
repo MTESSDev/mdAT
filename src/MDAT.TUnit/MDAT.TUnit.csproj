@@ -13,10 +13,10 @@
     <Company>MESS</Company>
     <PackageProjectUrl>https://github.com/MTESSDev/mdAT</PackageProjectUrl>
     <RepositoryUrl>https://github.com/MTESSDev/mdAT</RepositoryUrl>
-    <Version>2.0.0-beta.3</Version>
+    <Version>2.0.0-beta.5</Version>
     <Description>Markdown Auto-Tests for TUnit (.net 8+): markdown test cases as TUnit data sources.</Description>
     <PackageTags>markdown;testing;yaml;tunit;test-automation</PackageTags>
-    <PackageReleaseNotes>Beta of mdAT 2.0: TUnit data sources replacing the MSTest ones. net8.0/net9.0/net10.0. See the migration section of the README. Beta 2: a JsonDocument or JsonElement whose root is a string holding a JSON object or array is written as that object or array again (mdAT 1.4 behaviour); parallelism and code coverage notes added to the migration guide. Beta 3: the test explorer now points each case to its title in the markdown file (or to the start of its document in a YAML file) instead of the C# method.</PackageReleaseNotes>
+    <PackageReleaseNotes>Beta of mdAT 2.0: TUnit data sources replacing the MSTest ones. net8.0/net9.0/net10.0. See the migration section of the README. Beta 2: a JsonDocument or JsonElement whose root is a string holding a JSON object or array is written as that object or array again (mdAT 1.4 behaviour); parallelism and code coverage notes added to the migration guide. Beta 3: the test explorer now points each case to its title in the markdown file (or to the start of its document in a YAML file) instead of the C# method. Beta 4: a test case is named Method_Title@file.md (file name last, no path); the title of the raw output written by Verify.Assert shows readable type names (for example List of JsonNode instead of the compiler name). Beta 5: each markdown test file keeps a link to its C# test, inserted or corrected when the line of the test changes and never written again when nothing changed; the name of a case no longer repeats the name of the method; fixes for a markdown file shared by several tests.</PackageReleaseNotes>
     <RepositoryType>git</RepositoryType>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>

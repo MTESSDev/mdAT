@@ -1,5 +1,7 @@
 # T
 
+> C# : [AdapterTests.cs:30](../AdapterTests.cs#L30) <!-- mdat:AdapterTests.cs#AdapterTests.DateOnly_and_TimeOnly_arrive_intact -->
+
 ## Case 1
 
 first
