@@ -1,5 +1,6 @@
 using System.Reflection;
 using TUnit.Core;
+using TUnit.Core.Interfaces;
 
 namespace MDAT;
 
@@ -8,7 +9,7 @@ namespace MDAT;
 /// Rows are produced in-process as factories, so arguments are never serialized by the test framework.
 /// </summary>
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-public class MarkdownDataSourceAttribute : Attribute, IDataSourceAttribute
+public class MarkdownDataSourceAttribute : Attribute, IDataSourceAttribute, ITestDiscoveryEventReceiver
 {
     private readonly string _filePath;
 
@@ -17,9 +18,18 @@ public class MarkdownDataSourceAttribute : Attribute, IDataSourceAttribute
         _filePath = filePath;
     }
 
+    public int Order => 0;
+
     public bool SkipIfEmpty { get; set; }
 
     public bool DeferEnumeration { get; set; }
+
+    /// <summary>Points the test explorer to the case in its file (see <see cref="MarkdownTestCase.Line"/>).</summary>
+    public ValueTask OnTestDiscovered(DiscoveredTestContext context)
+    {
+        TestCaseLocations.Apply(context);
+        return default;
+    }
 
     public async IAsyncEnumerable<Func<Task<object?[]?>>> GetDataRowsAsync(DataGeneratorMetadata dataGeneratorMetadata)
     {
@@ -29,7 +39,7 @@ public class MarkdownDataSourceAttribute : Attribute, IDataSourceAttribute
 
         foreach (var testCase in new MarkdownTestSource(_filePath).GetCases(method))
         {
-            yield return TestMethodResolver.ToRow(testCase);
+            yield return TestCaseLocations.ToRow(testCase);
         }
     }
 }

@@ -38,9 +38,16 @@ public sealed class YamlFileTestSource
         var docs = Regex.Split(fileData, @"^---", RegexOptions.Multiline);
 
         var cases = new List<MarkdownTestCase>();
+        var fullPath = Path.GetFullPath(path);
+
+        // Each "---" separator is 3 characters long and was removed by the split: this is where a document starts
+        var documentStart = 0;
 
         foreach (var doc in docs)
         {
+            var separatorStart = documentStart == 0 ? 0 : documentStart - 3;
+            documentStart += doc.Length + 3;
+
             if (string.IsNullOrWhiteSpace(doc)) continue;
 
             IDeserializer deserializer = NewDeserializer(testMethod);
@@ -51,10 +58,26 @@ public sealed class YamlFileTestSource
 
             var arguments = values.Values.ToArray();
 
-            cases.Add(new MarkdownTestCase(arguments, $"{testMethod.Name}@{_filePath}_#{cases.Count + 1}"));
+            cases.Add(new MarkdownTestCase(arguments, $"{testMethod.Name}@{_filePath}_#{cases.Count + 1}", fullPath, LineOf(fileData, separatorStart)));
         }
 
         return cases;
+    }
+
+    /// <summary>1-based line of the character at <paramref name="index"/>.</summary>
+    private static int LineOf(string text, int index)
+    {
+        var line = 1;
+
+        for (var i = 0; i < index && i < text.Length; i++)
+        {
+            if (text[i] == '\n')
+            {
+                line++;
+            }
+        }
+
+        return line;
     }
 
     private static IDeserializer NewDeserializer(MethodInfo testMethod)

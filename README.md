@@ -24,7 +24,7 @@ Pour utiliser mdAT, suivez ces étapes :
 Modifiez votre fichier ``.md`` comme vous le souhaitez.
 8. Profitez-en !
 
-Chaque cas du fichier Markdown devient un test distinct dans l'explorateur de tests. Les arguments sont construits à partir du YAML et passés tels quels à votre méthode : aucune sérialisation intermédiaire, quel que soit leur type (`DateOnly`, `Dictionary<object, object>`, `JsonDocument`, ...).
+Chaque cas du fichier Markdown devient un test distinct dans l'explorateur de tests, et son emplacement est son titre dans le fichier Markdown (ou le début de son document dans un fichier YAML), pas la méthode C# partagée par tous les cas. TUnit transmet cet emplacement à l'explorateur de tests, qui s'en sert pour « Aller à la source » (double-clic). Les arguments sont construits à partir du YAML et passés tels quels à votre méthode : aucune sérialisation intermédiaire, quel que soit leur type (`DateOnly`, `Dictionary<object, object>`, `JsonDocument`, ...).
 
 ````csharp
 using MDAT;
@@ -131,7 +131,7 @@ mdAT 2.0 abandonne MSTest au profit de TUnit. Les projets qui restent sur MSTest
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="TUnit" Version="1.73.19" />
-    <PackageReference Include="MDAT" Version="2.0.0-beta.2" />
+    <PackageReference Include="MDAT" Version="2.0.0-beta.3" />
   </ItemGroup>
 </Project>
 ```
@@ -282,7 +282,7 @@ To use ``mdAT``, follow these steps:
 1. Edit your `.md` file as you wish.
 1. Enjoy!
 
-Each case of the markdown file is its own test in the test explorer. Arguments are built from the YAML and handed as is to your method: no intermediate serialization, whatever their type (`DateOnly`, `Dictionary<object, object>`, `JsonDocument`, ...).
+Each case of the markdown file is its own test in the test explorer, and its location is its title in the markdown file (or the start of its document in a YAML file), not the C# method shared by all the cases. TUnit hands this location to the test explorer, which uses it for "Go to source" (double click). Arguments are built from the YAML and handed as is to your method: no intermediate serialization, whatever their type (`DateOnly`, `Dictionary<object, object>`, `JsonDocument`, ...).
 
 ````csharp
 using MDAT;
@@ -389,7 +389,7 @@ mdAT 2.0 drops MSTest in favour of TUnit. Projects staying on MSTest can keep us
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="TUnit" Version="1.73.19" />
-    <PackageReference Include="MDAT" Version="2.0.0-beta.2" />
+    <PackageReference Include="MDAT" Version="2.0.0-beta.3" />
   </ItemGroup>
 </Project>
 ```

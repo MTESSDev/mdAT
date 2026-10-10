@@ -17,11 +17,4 @@ internal static class TestMethodResolver
                    modifiers: null)
                ?? throw new InvalidOperationException($"Could not resolve test method '{metadata.Class.Type.FullName}.{metadata.Name}'.");
     }
-
-    public static Func<Task<object?[]?>> ToRow(MarkdownTestCase testCase)
-    {
-        var row = new TestDataRow<object?[]>(testCase.Arguments, DisplayName: testCase.DisplayName);
-
-        return () => Task.FromResult<object?[]?>(new object?[] { row });
-    }
 }

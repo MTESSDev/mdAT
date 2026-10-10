@@ -13,10 +13,10 @@
     <Company>MESS</Company>
     <PackageProjectUrl>https://github.com/MTESSDev/mdAT</PackageProjectUrl>
     <RepositoryUrl>https://github.com/MTESSDev/mdAT</RepositoryUrl>
-    <Version>2.0.0-beta.2</Version>
+    <Version>2.0.0-beta.3</Version>
     <Description>Markdown Auto-Tests for TUnit (.net 8+): markdown test cases as TUnit data sources.</Description>
     <PackageTags>markdown;testing;yaml;tunit;test-automation</PackageTags>
-    <PackageReleaseNotes>Beta of mdAT 2.0: TUnit data sources replacing the MSTest ones. net8.0/net9.0/net10.0. See the migration section of the README. Beta 2: a JsonDocument or JsonElement whose root is a string holding a JSON object or array is written as that object or array again (mdAT 1.4 behaviour); parallelism and code coverage notes added to the migration guide.</PackageReleaseNotes>
+    <PackageReleaseNotes>Beta of mdAT 2.0: TUnit data sources replacing the MSTest ones. net8.0/net9.0/net10.0. See the migration section of the README. Beta 2: a JsonDocument or JsonElement whose root is a string holding a JSON object or array is written as that object or array again (mdAT 1.4 behaviour); parallelism and code coverage notes added to the migration guide. Beta 3: the test explorer now points each case to its title in the markdown file (or to the start of its document in a YAML file) instead of the C# method.</PackageReleaseNotes>
     <RepositoryType>git</RepositoryType>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
