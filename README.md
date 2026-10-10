@@ -131,7 +131,7 @@ mdAT 2.0 abandonne MSTest au profit de TUnit. Les projets qui restent sur MSTest
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="TUnit" Version="1.73.19" />
-    <PackageReference Include="MDAT" Version="2.0.0-beta.1" />
+    <PackageReference Include="MDAT" Version="2.0.0-beta.2" />
   </ItemGroup>
 </Project>
 ```
@@ -197,6 +197,8 @@ Les autres changements portent sur les messages d'écart, qui sont plus précis 
 - `allowAdditionalProperties` s'applique aussi aux objets contenus dans des tableaux ;
 - le texte de l'exception change si votre code l'analysait (`MDAT.JsonAssertException` n'hérite plus d'une exception xunit).
 
+Sérialisation de `System.Text.Json` : un `JsonDocument` (ou un `JsonElement`) dont la racine est une **chaîne contenant un objet ou un tableau JSON** est écrit comme cet objet ou ce tableau, ce qui permet d'attendre un objet YAML dans `data:`. C'était le comportement de mdAT 1.4. mdAT 1.5.0 et 1.5.1 l'avaient changé par erreur en chaîne, ce qui obligeait à écrire l'attendu sous forme de chaîne JSON : la 2.0 rétablit le comportement de la 1.4. Les autres chaînes (`"hello"`, `"123"`, un texte qui n'est pas du JSON valide) restent des chaînes.
+
 ### 6. Intégration continue
 
 - Un projet TUnit s'exécute avec `dotnet run --project MyTests -f net9.0` (ou `dotnet test` avec le SDK .NET 10).
@@ -238,6 +240,21 @@ dotnet run --project MyTests -- --coverage --coverage-output-format cobertura --
 ```
 
 Dans un workflow GitHub, remplacez `dotnet test --collect:"XPlat Code Coverage" --settings .runsettings` par cette commande et pointez l'étape de rapport (par exemple `irongut/CodeCoverageSummary`) vers le nouveau chemin du fichier `coverage.cobertura.xml`. Le [dotnet.yml](.github/workflows/dotnet.yml) de ce dépôt en est un exemple.
+
+### 8. Parallélisme : TUnit exécute les tests en parallèle
+
+MSTest exécute les tests l'un après l'autre par défaut. **TUnit les exécute en parallèle**. Un projet dont les tests partagent un état statique (une fabrique `static`, une base de données de test, un fichier, une variable globale) peut donc se mettre à échouer sans que mdAT ni le test n'aient changé. Retour d'expérience d'une migration de 428 tests : 228 échecs causés par une fabrique statique partagée.
+
+Deux solutions :
+
+- isoler l'état (une instance par test, par exemple avec `[Before(Test)]`) ;
+- ou désactiver le parallélisme pour tout le projet de test, avec un attribut d'assembly :
+
+```csharp
+[assembly: NotInParallel]
+```
+
+Pour ne sérialiser que certains tests, placez `[NotInParallel]` sur la classe ou la méthode (équivalent de `[DoNotParallelize]`).
 
 ---
 
@@ -372,7 +389,7 @@ mdAT 2.0 drops MSTest in favour of TUnit. Projects staying on MSTest can keep us
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="TUnit" Version="1.73.19" />
-    <PackageReference Include="MDAT" Version="2.0.0-beta.1" />
+    <PackageReference Include="MDAT" Version="2.0.0-beta.2" />
   </ItemGroup>
 </Project>
 ```
@@ -438,6 +455,8 @@ The other changes concern the difference messages, which are more precise:
 - `allowAdditionalProperties` also applies to objects held in arrays;
 - the exception text changes if your code parsed it (`MDAT.JsonAssertException` no longer derives from an xunit exception).
 
+`System.Text.Json` serialization: a `JsonDocument` (or a `JsonElement`) whose root is a **string holding a JSON object or array** is written as that object or array, so a YAML object can be expected in `data:`. This was the behaviour of mdAT 1.4. mdAT 1.5.0 and 1.5.1 changed it by mistake into a string, which forced the expected value to be written as a JSON string: 2.0 restores the 1.4 behaviour. Other strings (`"hello"`, `"123"`, text that is not valid JSON) stay strings.
+
 ### 6. Continuous integration
 
 - A TUnit project runs with `dotnet run --project MyTests -f net9.0` (or `dotnet test` with the .NET 10 SDK).
@@ -479,3 +498,18 @@ dotnet run --project MyTests -- --coverage --coverage-output-format cobertura --
 ```
 
 In a GitHub workflow, replace `dotnet test --collect:"XPlat Code Coverage" --settings .runsettings` with this command and point the report step (for example `irongut/CodeCoverageSummary`) to the new path of the `coverage.cobertura.xml` file. This repository's [dotnet.yml](.github/workflows/dotnet.yml) is an example.
+
+### 8. Parallelism: TUnit runs tests in parallel
+
+MSTest runs tests one after the other by default. **TUnit runs them in parallel**. A project whose tests share static state (a `static` factory, a test database, a file, a global variable) may therefore start failing even though neither mdAT nor the tests changed. Feedback from a 428-test migration: 228 failures caused by a shared static factory.
+
+Two solutions:
+
+- isolate the state (one instance per test, for example with `[Before(Test)]`);
+- or turn parallelism off for the whole test project, with an assembly attribute:
+
+```csharp
+[assembly: NotInParallel]
+```
+
+To serialize only some tests, put `[NotInParallel]` on the class or the method (equivalent of `[DoNotParallelize]`).
