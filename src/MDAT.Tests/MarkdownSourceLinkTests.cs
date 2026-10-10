@@ -259,6 +259,48 @@ public class MarkdownSourceLinkTests
     }
 
     [Test]
+    public async Task A_utf16_file_is_left_untouched()
+    {
+        // UTF-16 files are not handled: rewriting them as UTF-8 would change their encoding
+        var bytes = Encoding.Unicode.GetPreamble().Concat(Encoding.Unicode.GetBytes("# Probe\n\n## Case 1\n")).ToArray();
+
+        using var sandbox = new Sandbox(markdownBytes: bytes);
+
+        var changed = MarkdownSourceLink.Update(sandbox.Markdown, sandbox.Source, 5, "Probe");
+
+        await Assert.That(changed).IsFalse();
+        await Assert.That(sandbox.Bytes.SequenceEqual(bytes)).IsTrue();
+    }
+
+    [Test]
+    public async Task The_line_can_be_built_without_writing_it()
+    {
+        using var sandbox = new Sandbox();
+
+        await Assert.That(MarkdownSourceLink.BuildLine(sandbox.Markdown, sandbox.Source, 7, "Probe"))
+            .IsEqualTo("> C# : [Code Tests.cs:7](../Code%20Tests.cs#L7) <!-- mdat:Code Tests.cs#Probe -->");
+
+        // without the name of a test, the marker holds the C# file only
+        await Assert.That(MarkdownSourceLink.BuildLine(sandbox.Markdown, sandbox.Source, 7))
+            .IsEqualTo("> C# : [Code Tests.cs:7](../Code%20Tests.cs#L7) <!-- mdat:Code Tests.cs -->");
+
+        await Assert.That(sandbox.Text).IsEqualTo(Title);
+    }
+
+    [Test]
+    public async Task Nothing_is_written_without_a_test_or_a_markdown_path_and_synchronized_gives_back_the_result()
+    {
+        using var sandbox = new Sandbox();
+
+        await Assert.That(MarkdownSourceLink.Update(sandbox.Markdown, Array.Empty<SourceLinkEntry>())).IsFalse();
+        await Assert.That(MarkdownSourceLink.Update("", new[] { new SourceLinkEntry(sandbox.Source, 3, "Probe") })).IsFalse();
+        await Assert.That(MarkdownSourceLink.Update(sandbox.Markdown, new[] { new SourceLinkEntry("", 3, "Probe") })).IsFalse();
+        await Assert.That(sandbox.Text).IsEqualTo(Title);
+
+        await Assert.That(MarkdownSourceLink.Synchronized(sandbox.Markdown, () => 42)).IsEqualTo(42);
+    }
+
+    [Test]
     public async Task Two_tests_sharing_a_file_each_keep_their_own_line()
     {
         using var sandbox = new Sandbox();
