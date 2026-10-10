@@ -228,7 +228,7 @@ public class MarkdownSourceLinkTests
         File.SetLastWriteTimeUtc(sandbox.Markdown, oldDate);
 
         // the same links, found in another order
-        var again = MarkdownSourceLink.Update(sandbox.Markdown, entries.Reverse());
+        var again = MarkdownSourceLink.Update(sandbox.Markdown, Enumerable.Reverse(entries));
 
         await Assert.That(again).IsFalse();
         await Assert.That(File.GetLastWriteTimeUtc(sandbox.Markdown)).IsEqualTo(oldDate);
