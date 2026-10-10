@@ -74,26 +74,14 @@ namespace MDAT.Resolver
                     return File.ReadAllText(includePath).ReplaceLineEndings("\n");
                 }
 
-                var objYaml = deserializer.Build().Deserialize(new Parser(File.OpenText(includePath)), expectedType);
-
-                /*var json = JsonConvert.SerializeObject(objYaml);
-
-                    var personCopy =  new JsonSerializerSettings()
-                    {
-                        ContractResolver = new PrivateResolver(),
-                        ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor
-                    };
-                var jsonobj = JsonConvert.DeserializeObject(json, expectedType, personCopy);*/
-
-                return objYaml;
+                using (var reader = File.OpenText(includePath))
+                {
+                    return deserializer.Build().Deserialize(new Parser(reader), expectedType);
+                }
             }
 
             if (JsonExtensionRegex.IsMatch(extension))
             {
-                if (expectedType == typeof(string))
-                {
-                    return File.ReadAllText(includePath).ReplaceLineEndings("\n");
-                }
                 return File.ReadAllText(includePath).ReplaceLineEndings("\n");
             }
 
