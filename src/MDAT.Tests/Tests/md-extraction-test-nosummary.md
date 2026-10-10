@@ -51,6 +51,7 @@ expected:
           - type: match
             jsonPath: $
             allowAdditionalProperties: false
+            ignoreArrayOrder: false
             data: null
       ``````
 ``````

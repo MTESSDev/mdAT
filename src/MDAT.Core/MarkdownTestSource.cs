@@ -10,22 +10,42 @@ using YamlDotNet.Serialization;
 
 namespace MDAT
 {
-    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-    public class MarkdownTestAttribute : Attribute, ITestDataSource
+    /// <summary>
+    /// One test case extracted from a markdown file: the arguments to give to the test method and its display name.
+    /// </summary>
+    public sealed class MarkdownTestCase
+    {
+        public MarkdownTestCase(object?[] arguments, string displayName)
+        {
+            Arguments = arguments;
+            DisplayName = displayName;
+        }
+
+        public object?[] Arguments { get; }
+
+        public string DisplayName { get; }
+    }
+
+    /// <summary>
+    /// Reads test cases from a markdown file. Independent of any test framework.
+    /// </summary>
+    public sealed class MarkdownTestSource
     {
         private string _filePath;
 
-        public string ParsedPath { get; set; }
+        public string ParsedPath { get; private set; }
 
-        private Dictionary<int, string> displayNames = new Dictionary<int, string>();
-
-        public MarkdownTestAttribute(string filePath)
+        public MarkdownTestSource(string filePath)
         {
             _filePath = filePath;
             ParsedPath = _filePath;
         }
 
-        public IEnumerable<object[]> GetData(MethodInfo testMethod)
+        /// <summary>
+        /// Loads the test cases for <paramref name="testMethod"/>. When the markdown file does not exist, it is
+        /// generated from the method signature and no case is returned.
+        /// </summary>
+        public IReadOnlyList<MarkdownTestCase> GetCases(MethodInfo testMethod)
         {
             if (testMethod == null) { throw new ArgumentNullException(nameof(testMethod)); }
 
@@ -35,15 +55,15 @@ namespace MDAT
             if (!File.Exists(ParsedPath))
             {
                 CreateMardownFile(testMethod);
-                return Array.Empty<object[]>();
+                return Array.Empty<MarkdownTestCase>();
             }
 
-            List<object[]> to = LoadMarkdownFile(testMethod);
+            var to = LoadMarkdownFile(testMethod);
 
             return to;
         }
 
-        private List<object[]> LoadMarkdownFile(MethodInfo testMethod)
+        private List<MarkdownTestCase> LoadMarkdownFile(MethodInfo testMethod)
         {
             var fileData = File.ReadAllText(ParsedPath);
 
@@ -51,8 +71,8 @@ namespace MDAT
 
             string?[] headings = new string?[] { null, null, null, null, null, null };
 
-            List<object[]> to = new();
-            List<object[]> toSelected = new();
+            List<MarkdownTestCase> to = new();
+            List<MarkdownTestCase> toSelected = new();
 
             foreach (var info in mdFile)
             {
@@ -74,12 +94,14 @@ namespace MDAT
 
                     var values = ExtractTest(testMethod, doc, Path.GetDirectoryName(ParsedPath)!);
 
-                    displayNames.Add(values.GetHashCode(), "_" + string.Join("_", headings.Where(s => !string.IsNullOrWhiteSpace(s))));
+                    if (values is null) continue;
+
+                    var testCase = new MarkdownTestCase(values, DisplayName(testMethod, headings));
 
                     if (fbc.Arguments is { } && fbc.Arguments.Contains("selected", StringComparison.InvariantCultureIgnoreCase))
-                        toSelected.Add(values);
+                        toSelected.Add(testCase);
                     else
-                        to.Add(values);
+                        to.Add(testCase);
                 }
             }
 
@@ -87,6 +109,11 @@ namespace MDAT
                 return toSelected;
             else
                 return to;
+        }
+
+        private string DisplayName(MethodInfo testMethod, string?[] headings)
+        {
+            return $"{testMethod.Name}@{_filePath}_{string.Join("_", headings.Where(h => !string.IsNullOrWhiteSpace(h)))}";
         }
 
         private static void SetHeadings(string?[] heading, HeadingBlock add)
@@ -99,7 +126,7 @@ namespace MDAT
             }
         }
 
-        private static object[] ExtractTest(MethodInfo testMethod, string doc, string directoryName)
+        private static object[]? ExtractTest(MethodInfo testMethod, string doc, string directoryName)
         {
             var resolver = new MDATYamlTypeResolver(testMethod);
 
@@ -110,14 +137,14 @@ namespace MDAT
             {
                 var ggs = deserializer.Deserialize<Dictionary<string, object>>(doc);
 
-                if (ggs is null) return default!;
+                if (ggs is null) return null;
                 values = ggs.Values.ToArray();
 
             }
             catch (YamlException ex)
             {
                 var invalidName = testMethod.GetParameters()[resolver.Position - 1];
-                throw new InternalTestFailureException($"Method '{testMethod.Name}' exception on '{invalidName.Name}' parameter.'\n{ex.Message}\n{ex.InnerException?.Message}", ex);
+                throw new MdatTestDefinitionException($"Method '{testMethod.Name}' exception on '{invalidName.Name}' parameter.'\n{ex.Message}\n{ex.InnerException?.Message}", ex);
             }
 
             return values;
@@ -244,20 +271,6 @@ namespace MDAT
             deserializer.WithNodeDeserializer(includeNodeDeserializer, s => s.OnTop());
 
             return deserializer.Build();
-        }
-
-        public string? GetDisplayName(MethodInfo methodInfo, object?[]? data)
-        {
-            var parameters = methodInfo.GetParameters();
-
-
-            if (data != null)
-            {
-                var name = displayNames[data.GetHashCode()];
-                return $"{methodInfo.Name}@{_filePath}{name}";
-            }
-
-            return null;
         }
     }
 }

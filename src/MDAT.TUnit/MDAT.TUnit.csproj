@@ -1,0 +1,46 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>MDAT</RootNamespace>
+    <AssemblyName>MDAT.TUnit</AssemblyName>
+    <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
+    <PackageId>MDAT.TUnit</PackageId>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <Authors>anisite</Authors>
+    <Company>MESS</Company>
+    <PackageProjectUrl>https://github.com/MTESSDev/mdAT</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/MTESSDev/mdAT</RepositoryUrl>
+    <Version>2.0.0-beta.1</Version>
+    <Description>Markdown Auto-Tests for TUnit (.net 8+): markdown test cases as TUnit data sources.</Description>
+    <PackageTags>markdown;testing;yaml;tunit;test-automation</PackageTags>
+    <PackageReleaseNotes>Beta of mdAT 2.0: TUnit data sources replacing the MSTest ones. net8.0/net9.0/net10.0. See the migration section of the README.</PackageReleaseNotes>
+    <RepositoryType>git</RepositoryType>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="TUnit.Core" Version="1.73.19" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MDAT.Core\MDAT.Core.csproj" />
+  </ItemGroup>
+
+</Project>

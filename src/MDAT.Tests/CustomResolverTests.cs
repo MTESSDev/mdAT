@@ -1,29 +1,37 @@
-﻿using MDAT;
+using MDAT;
+using MDATTests;
 using MDATTests.Resolver;
 using Microsoft.Extensions.Primitives;
 
-[assembly: Parallelize(Workers = 0, Scope = ExecutionScope.MethodLevel)]
-
 namespace MDAT.Tests;
 
-[TestClass]
 public class CustomResolverTests
 {
-    [ClassInitialize]
-    public static void ClassInitialize(TestContext testContext)
+    /// <summary>
+    /// Test AddYamlTypeConverter.
+    /// <see cref="MdatConfig"/> is global: the converter is registered for the duration of the test only, so the
+    /// other tests (which read their cases during discovery, before any test runs) are not affected.
+    /// </summary>
+    [Test]
+    [NotInParallel]
+    public async Task Test_AddYamlTypeConverter()
     {
-        MdatConfig.AddYamlTypeConverter(new StringValuesTestYamlTypeConverter());
+        var converter = new StringValuesTestYamlTypeConverter();
+        MdatConfig.AddYamlTypeConverter(converter);
+
+        try
+        {
+            var method = Utils.GetMethodInfo(() => ConverterTarget);
+            var testCase = new MarkdownTestSource("~\\Tests\\test-add-yaml-type-converter.md").GetCases(method).Single();
+
+            _ = await Verify.Assert(() => Task.FromResult((StringValues)testCase.Arguments[0]!), (Expected)testCase.Arguments[1]!);
+        }
+        finally
+        {
+            MdatConfig.ListeTypeConverter.RemoveAll(c => ReferenceEquals(c.TypeConverter, converter));
+        }
     }
 
-    /// <summary>
-    /// Test AddYamlTypeConverter
-    /// </summary>
-    [TestMethod]
-    [DoNotParallelize]
-    [MarkdownTest("~\\Tests\\{method}.md")]
-    public async Task Test_AddYamlTypeConverter(StringValues input, Expected expected)
-    {
-        _ = await Verify.Assert(() =>
-                                    Task.FromResult(input), expected);
-    }
+    /// <summary>Signature read by the markdown file of <see cref="Test_AddYamlTypeConverter"/>.</summary>
+    public void ConverterTarget(StringValues input, Expected expected) { }
 }

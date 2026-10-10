@@ -1,4 +1,4 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using System.Diagnostics.CodeAnalysis;
 
 namespace MDAT.Tests
@@ -7,8 +7,8 @@ namespace MDAT.Tests
     [ExcludeFromCodeCoverage]
     public class YamlFileDataAttributeTests
     {
-        [TestMethod]
-        [YamlFileData("~\\Tests\\test.yaml")]
+        [Test]
+        [YamlFileDataSource("~\\Tests\\test.yaml")]
         public async Task YamlFileDataAttributeTestAsync(int val1, int val2, string expected)
         {
             object value = await Verify.Assert(() =>

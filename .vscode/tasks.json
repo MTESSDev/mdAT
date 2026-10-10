@@ -7,7 +7,7 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/src/MDAT/MDAT.csproj",
+                "${workspaceFolder}/src/MDAT.Core/MDAT.Core.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
@@ -19,7 +19,7 @@
             "type": "process",
             "args": [
                 "publish",
-                "${workspaceFolder}/src/MDAT/MDAT.csproj",
+                "${workspaceFolder}/src/MDAT.Core/MDAT.Core.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
@@ -33,7 +33,7 @@
                 "watch",
                 "run",
                 "--project",
-                "${workspaceFolder}/src/MDAT/MDAT.csproj"
+                "${workspaceFolder}/src/MDAT.Core/MDAT.Core.csproj"
             ],
             "problemMatcher": "$msCompile"
         }

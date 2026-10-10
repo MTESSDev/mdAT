@@ -2,7 +2,6 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
-using Quibble.Xunit;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -108,7 +107,7 @@ public static class Extensions
 
         JsonAssert.EqualOverrideDefault(finalExpectedData?.ToString(),
                                 finalData,
-                                new JsonDiffConfig(item.allowAdditionalProperties));
+                                new JsonDiffConfig(item.allowAdditionalProperties, item.ignoreArrayOrder));
     }
 
     public static JsonSerializerSettings JsonSerializeSettings()

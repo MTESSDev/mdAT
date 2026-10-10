@@ -1,105 +1,69 @@
-﻿using System.Reflection;
+using MDAT.Resolver;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using YamlDotNet.Serialization;
-using MDAT.Resolver;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Globalization;
-using Newtonsoft.Json;
-using System.Diagnostics.CodeAnalysis;
 
-namespace MDAT
+namespace MDAT;
+
+/// <summary>
+/// Reads test cases from a multi-document YAML file (documents separated by <c>---</c>). Independent of any test framework.
+/// </summary>
+public sealed class YamlFileTestSource
 {
-    [ExcludeFromCodeCoverage]
-    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-    public class YamlFileDataAttribute : Attribute, ITestDataSource
+    private readonly string _filePath;
+
+    public YamlFileTestSource(string filePath)
     {
-        private readonly string _filePath;
-        private readonly string _propertyName;
+        _filePath = filePath;
+    }
 
-        private Dictionary<int, string> displayNames = new Dictionary<int, string>();
+    public IReadOnlyList<MarkdownTestCase> GetCases(MethodInfo testMethod)
+    {
+        if (testMethod == null) { throw new ArgumentNullException(nameof(testMethod)); }
 
-        public YamlFileDataAttribute(string filePath)
+        var path = _filePath.Replace('\\', '/').Replace("~/", "../../../");
+
+        // Get the absolute path to the YAML file
+        path = Path.IsPathRooted(path)
+                ? path
+                : Path.GetRelativePath(Directory.GetCurrentDirectory(), path);
+
+        if (!File.Exists(path))
         {
-            _filePath = filePath;
-        }
-         
-        /// <inheritDoc />
-        public IEnumerable<object[]> GetData(MethodInfo testMethod)
-        {
-            if (testMethod == null) { throw new ArgumentNullException(nameof(testMethod)); }
-
-            var path = _filePath.Replace("~\\", "..\\..\\..\\");
-
-            // Get the absolute path to the JSON file
-            path = Path.IsPathRooted(path)
-                    ? path
-                    : Path.GetRelativePath(Directory.GetCurrentDirectory(), path);
-
-            if (!File.Exists(path))
-            {
-                throw new Exception($"Could not find file at path: {path}");
-            }
-
-            // Load the file
-            var fileData = File.ReadAllText(path);
-
-            if (string.IsNullOrEmpty(_propertyName))
-            {
-                IEnumerable<object[]> retour;
-
-                var docs = Regex.Split(fileData, @"^---", RegexOptions.Multiline);
-
-                List<object[]> to = new List<object[]>();
-
-
-                foreach (var doc in docs)
-                {
-                    if (string.IsNullOrWhiteSpace(doc)) continue;
-
-
-                    IDeserializer deserializer = NewDeserilizer(testMethod);
-
-                    var ggs = deserializer.Deserialize<Dictionary<string, object>>("---\n" + doc);
-
-                    if (ggs is null) continue;
-
-                    var arr = ggs.Values.ToArray();
-
-                    displayNames.Add(arr.GetHashCode(), "Nom " + arr[0]);
-
-                    to.Add(arr);
-                }
-
-
-                return to;
-
-            }
-
-            return null;
+            throw new FileNotFoundException($"Could not find file at path: {path}", path);
         }
 
-        private static IDeserializer NewDeserilizer(MethodInfo testMethod)
+        var fileData = File.ReadAllText(path);
+
+        var docs = Regex.Split(fileData, @"^---", RegexOptions.Multiline);
+
+        var cases = new List<MarkdownTestCase>();
+
+        foreach (var doc in docs)
         {
-            IDeserializer deserializer = new DeserializerBuilder()
-              .WithNodeTypeResolver(new MDATYamlTypeResolver(testMethod))
-              .WithTypeConverter(new ByteArayConverter())
-              .WithAttemptingUnquotedStringTypeDeserialization()
-              .IgnoreUnmatchedProperties()
-              .Build();
-            return deserializer;
+            if (string.IsNullOrWhiteSpace(doc)) continue;
+
+            IDeserializer deserializer = NewDeserializer(testMethod);
+
+            var values = deserializer.Deserialize<Dictionary<string, object>>("---\n" + doc);
+
+            if (values is null) continue;
+
+            var arguments = values.Values.ToArray();
+
+            cases.Add(new MarkdownTestCase(arguments, $"{testMethod.Name}@{_filePath}_#{cases.Count + 1}"));
         }
 
-        public string? GetDisplayName(MethodInfo methodInfo, object?[]? data)
-        {
-            var parameters = methodInfo.GetParameters();
+        return cases;
+    }
 
-            if (data != null)
-            {
-                var name = displayNames[data.GetHashCode()];
-                return $"{methodInfo.Name}@{_filePath}_#{JsonConvert.SerializeObject(data)}";
-            }
-
-            return null;
-        }
+    private static IDeserializer NewDeserializer(MethodInfo testMethod)
+    {
+        return new DeserializerBuilder()
+          .WithNodeTypeResolver(new MDATYamlTypeResolver(testMethod))
+          .WithTypeConverter(new ByteArayConverter())
+          .WithAttemptingUnquotedStringTypeDeserialization()
+          .IgnoreUnmatchedProperties()
+          .Build();
     }
 }

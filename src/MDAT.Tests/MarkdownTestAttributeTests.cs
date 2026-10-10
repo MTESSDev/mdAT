@@ -10,7 +10,7 @@ namespace MDAT.Tests
     /// <summary>
     /// Ignored comment
     /// </summary>
-    [TestClass]
+
     public class MarkdownTestAttributeTests
     {
 
@@ -20,22 +20,16 @@ namespace MDAT.Tests
             public Dictionary<object, object> Test { get; set; }
         }
 
-        static IEnumerable<object[]> ReusableTestDataProperty
+        public static IEnumerable<Func<Params>> ReusableTestData()
         {
-            get
-            {
-                return new[]
-                {
-                    new object[] { new Params() { Test = new Dictionary<object, object> { { "test", new Dictionary<object, object> { { "test", 1 } } } } } },
-                };
-            }
+            yield return () => new Params() { Test = new Dictionary<object, object> { { "test", new Dictionary<object, object> { { "test", 1 } } } } };
         }
 
         /// <summary>
         /// Simple test, addition 2 numbers, compare expected result
         /// </summary>
-        [TestMethod]
-        [DynamicData("ReusableTestDataProperty")]
+        [Test]
+        [MethodDataSource(nameof(ReusableTestData))]
         public async Task Dynam(Params val1)
         {
             _ = await Verify.Assert(() => Task.FromResult(val1), new Expected() { verify = new VerifyStep[] { new VerifyStep { data = "{\"Test\":{\"test\":{\"test\":1}}}", type = "match", jsonPath = "$" } } });
@@ -44,8 +38,8 @@ namespace MDAT.Tests
         /// <summary>
         /// Simple test, addition 2 numbers, compare expected result
         /// </summary>
-        [TestMethod]
-        [MarkdownTest("~/Tests/test.md")]
+        [Test]
+        [MarkdownDataSource("~/Tests/test.md")]
         public async Task Md1(int val1, int val2, string expected)
         {
             _ = await Verify.Assert(() => Task.FromResult(Utils.Calculer(val1, val2)), expected);
@@ -54,8 +48,8 @@ namespace MDAT.Tests
         /// <summary>
         /// Test JustME :)
         /// </summary>
-        [TestMethod]
-        [MarkdownTest("~/Tests/test-justme.md")]
+        [Test]
+        [MarkdownDataSource("~/Tests/test-justme.md")]
         public async Task Md_Justme(int val1, int val2, string expected)
         {
             _ = await Verify.Assert(() => Task.FromResult(Utils.Calculer(val1, val2)), expected);
@@ -65,8 +59,8 @@ namespace MDAT.Tests
         /// <summary>
         /// Test skip
         /// </summary>
-        [TestMethod]
-        [MarkdownTest("~/Tests/test-skip.md")]
+        [Test]
+        [MarkdownDataSource("~/Tests/test-skip.md")]
         public async Task Md_Skip(int val1, int val2, string expected)
         {
             _ = await Verify.Assert(() => Task.FromResult(Utils.Calculer(val1, val2)), expected);
@@ -81,8 +75,8 @@ namespace MDAT.Tests
         /// <summary>
         /// Multi level object
         /// </summary>
-        [TestMethod]
-        [MarkdownTest("~/Tests/{method}.md")]
+        [Test]
+        [MarkdownDataSource("~/Tests/{method}.md")]
         public async Task Multi_level(FormulaireWebFRW1DO form, Expected expected)
         {
             _ = await Verify.Assert(() => Task.FromResult(form), expected);
@@ -91,8 +85,8 @@ namespace MDAT.Tests
         /// <summary>
         /// External file include
         /// </summary>
-        [TestMethod]
-        [MarkdownTest("~/Tests/{method}.md")]
+        [Test]
+        [MarkdownDataSource("~/Tests/{method}.md")]
         public async Task External_file(FormulaireWebFRW1DO form, Expected expected)
         {
             _ = await Verify.Assert(() => Task.FromResult(form), expected);
@@ -101,8 +95,8 @@ namespace MDAT.Tests
         /// <summary>
         /// Test Exception
         /// </summary>
-        [TestMethod]
-        [MarkdownTest("~/Tests/{method}.md")]
+        [Test]
+        [MarkdownDataSource("~/Tests/{method}.md")]
         public async Task Exception_test(FormulaireWebFRW1DO form, Expected expected)
         {
             _ = await Verify.Assert(() => Task.FromResult(ThrowE()), expected);
@@ -116,8 +110,8 @@ namespace MDAT.Tests
         /// <summary>
         /// External file include 2
         /// </summary>
-        [TestMethod]
-        [MarkdownTest("~/Tests/{method}.md")]
+        [Test]
+        [MarkdownDataSource("~/Tests/{method}.md")]
         public async Task External_file2(string form, Expected expected)
         {
             _ = await Verify.Assert(() => Task.FromResult(form), expected);
@@ -126,8 +120,8 @@ namespace MDAT.Tests
         /// <summary>
         /// External file include base64
         /// </summary>
-        [TestMethod]
-        [MarkdownTest("~/Tests/{method}.md")]
+        [Test]
+        [MarkdownDataSource("~/Tests/{method}.md")]
         public async Task External_file_base64(byte[] form, Expected expected)
         {
             _ = await Verify.Assert(() => Task.FromResult(form), expected);
@@ -136,8 +130,8 @@ namespace MDAT.Tests
         /// <summary>
         /// Nullable byte[]
         /// </summary>
-        [TestMethod]
-        [MarkdownTest("~/Tests/{method}.md")]
+        [Test]
+        [MarkdownDataSource("~/Tests/{method}.md")]
         public async Task Nullable_byte_array(byte[]? form, Expected expected)
         {
             _ = await Verify.Assert(() => Task.FromResult(form), expected);
@@ -146,8 +140,8 @@ namespace MDAT.Tests
         /// <summary>
         /// External file include base64 string
         /// </summary>
-        [TestMethod]
-        [MarkdownTest("~/Tests/{method}.md")]
+        [Test]
+        [MarkdownDataSource("~/Tests/{method}.md")]
         public async Task External_file_base64_String(string form, Expected expected)
         {
             _ = await Verify.Assert(() => Task.FromResult(form), expected);
@@ -156,8 +150,8 @@ namespace MDAT.Tests
         /// <summary>
         /// External file include byte[] dictionary
         /// </summary>
-        [TestMethod]
-        [MarkdownTest("~/Tests/{method}.md")]
+        [Test]
+        [MarkdownDataSource("~/Tests/{method}.md")]
         public async Task External_file_byte_dictionary(Dictionary<string, byte[]> form, Expected expected)
         {
             _ = await Verify.Assert(() => Task.FromResult(form), expected);
@@ -166,8 +160,8 @@ namespace MDAT.Tests
         /// <summary>
         /// External file include string dictionary
         /// </summary>
-        [TestMethod]
-        [MarkdownTest("~/Tests/{method}.md")]
+        [Test]
+        [MarkdownDataSource("~/Tests/{method}.md")]
         public async Task External_file_string_dictionary(Dictionary<string, string> form, Expected expected)
         {
             _ = await Verify.Assert(() => Task.FromResult(form), expected);
@@ -176,8 +170,8 @@ namespace MDAT.Tests
         /// <summary>
         /// Dictionary_object_object
         /// </summary>
-        [TestMethod]
-        [MarkdownTest("~/Tests/{method}.md")]
+        [Test]
+        [MarkdownDataSource("~/Tests/{method}.md")]
         public async Task Dictionary_object_object(Dictionary<object, object> dict, Expected expected)
         {
             _ = await Verify.Assert(() => Task.FromResult(dict), expected);
@@ -186,8 +180,8 @@ namespace MDAT.Tests
         /// <summary>
         /// Dictionary_object_object in Dictionary_object_object 
         /// </summary>
-        [TestMethod]
-        [MarkdownTest("~/Tests/{method}.md")]
+        [Test]
+        [MarkdownDataSource("~/Tests/{method}.md")]
         public async Task Dictionary_object_object_in_Dictionary_object_object(Dictionary<object, object> dict, Expected expected)
         {
             _ = await Verify.Assert(() => Task.FromResult(dict), expected);
@@ -196,8 +190,8 @@ namespace MDAT.Tests
         /// <summary>
         /// Exception test
         /// </summary>
-        [TestMethod]
-        [MarkdownTest("~/Tests/{method}.md")]
+        [Test]
+        [MarkdownDataSource("~/Tests/{method}.md")]
         public async Task Crash_Test(int val1, int val2, Expected expected)
         {
             _ = await Verify.Assert(() => Task.FromResult(Utils.CrashExceptionCheck(val1, val2)), expected);
@@ -220,16 +214,16 @@ namespace MDAT.Tests
         /// Test XML comments extraction and file generation
         /// This test whole document integrity
         /// </summary>
-        [TestMethod]
-        [MarkdownTest("~\\Tests\\{method}.md")]
+        [Test]
+        [MarkdownDataSource("~\\Tests\\{method}.md")]
         public async Task Md_Extraction_test(Expected expected)
         {
             var guid = Guid.NewGuid();
 
-            var test = new MarkdownTestAttribute($"~\\Tests\\Generated\\Generated-md-Test-{guid}.md");
+            var test = new MarkdownTestSource($"~\\Tests\\Generated\\Generated-md-Test-{guid}.md");
             var method = Utils.GetMethodInfo(() => MdWithSummary);
 
-            test.GetData(method);
+            test.GetCases(method);
 
             object value = await Verify.Assert(() =>
                                         Task.FromResult(File.ReadAllText(test.ParsedPath)), expected);
@@ -238,30 +232,30 @@ namespace MDAT.Tests
         /// <summary>
         /// Test tests naming values
         /// </summary>
-        [TestMethod]
-        [MarkdownTest("~\\Tests\\{method}.md")]
+        [Test]
+        [MarkdownDataSource("~\\Tests\\{method}.md")]
         public async Task Test_Tests_Naming(Expected expected)
         {
-            var test = new MarkdownTestAttribute($"~\\Tests\\test.md");
+            var test = new MarkdownTestSource($"~\\Tests\\test.md");
             var method = Utils.GetMethodInfo(() => Md1);
 
-            var tests = test.GetData(method);
+            var tests = test.GetCases(method);
 
             object value = await Verify.Assert(() =>
-                                        Task.FromResult(test.GetDisplayName(method, tests.LastOrDefault())!), expected);
+                                        Task.FromResult(tests.Last().DisplayName), expected);
         }
 
         /// <summary>
         /// Test object deserialization 
         /// </summary>
-        [TestMethod]
-        [MarkdownTest("~\\Tests\\{method}.md")]
+        [Test]
+        [MarkdownDataSource("~\\Tests\\{method}.md")]
         public async Task Test_object_deserialization(Expected expected)
         {
-            var test = new MarkdownTestAttribute($"~\\Tests\\test-output-test-object-deserialization.md");
+            var test = new MarkdownTestSource($"~\\Tests\\test-output-test-object-deserialization.md");
             var method = Utils.GetMethodInfo(() => Md2);
 
-            var tests = test.GetData(method);
+            var tests = test.GetCases(method);
 
             object value = await Verify.Assert(() =>
                                         Task.FromResult(File.ReadAllText(test.ParsedPath)), expected);
@@ -271,14 +265,14 @@ namespace MDAT.Tests
         /// Test XML comments extraction and file generation
         /// This test whole document integrity
         /// </summary>
-        [TestMethod]
+        [Test]
         public async Task Md_no_method_test()
         {
             var guid = Guid.NewGuid();
 
-            var test = new MarkdownTestAttribute($"~\\Tests\\Generated\\Generated-md-Test-{guid}.md");
+            var test = new MarkdownTestSource($"~\\Tests\\Generated\\Generated-md-Test-{guid}.md");
             object value = await Verify.Assert(() =>
-                                        Task.FromResult(test.GetData(null!)), new Expected()
+                                        Task.FromResult(test.GetCases(null!)), new Expected()
                                         {
                                             verify = new VerifyStep[] { new VerifyStep { data = "{ " +
                                                         "\"ClassName\":\"System.ArgumentNullException\",       " +
@@ -292,16 +286,16 @@ namespace MDAT.Tests
         /// Test XML comments extraction and file generation
         /// This test whole document integrity
         /// </summary>
-        [TestMethod]
-        [MarkdownTest("~\\Tests\\{method}.md")]
+        [Test]
+        [MarkdownDataSource("~\\Tests\\{method}.md")]
         public async Task Md_Extraction_test_nosummary(Expected expected)
         {
             var guid = Guid.NewGuid();
 
-            var test = new MarkdownTestAttribute($"~\\Tests\\Generated\\Generated-md-Test-nosummary-{guid}.md");
+            var test = new MarkdownTestSource($"~\\Tests\\Generated\\Generated-md-Test-nosummary-{guid}.md");
             var method = Utils.GetMethodInfo(() => MdWithoutSummary);
 
-            test.GetData(method);
+            test.GetCases(method);
 
             object value = await Verify.Assert(() =>
                                         Task.FromResult(File.ReadAllText(test.ParsedPath)), expected);
@@ -310,8 +304,8 @@ namespace MDAT.Tests
         /// <summary>
         /// Test output expected
         /// </summary>
-        [TestMethod]
-        [MarkdownTest("~/Tests/{method}.md")]
+        [Test]
+        [MarkdownDataSource("~/Tests/{method}.md")]
         public async Task Output_expected(Dictionary<string, string> form, byte[] bytes, Expected expected)
         {
             _ = await Verify.Assert(() => Task.FromResult(new { form, bytes }), expected);
@@ -321,8 +315,8 @@ namespace MDAT.Tests
         /// <summary>
         /// Test jsonPath array count
         /// </summary>
-        [TestMethod]
-        [MarkdownTest("~/Tests/{method}.md")]
+        [Test]
+        [MarkdownDataSource("~/Tests/{method}.md")]
         public async Task JsonPath(Expected expected)
         {
             _ = await Verify.Assert(() => Task.FromResult(new { test = new string[] { "val1", "val2" } }), expected);
@@ -331,8 +325,8 @@ namespace MDAT.Tests
         /// <summary>
         /// Test jsonPath array count
         /// </summary>
-        [TestMethod]
-        [MarkdownTest("~/Tests/{method}.md")]
+        [Test]
+        [MarkdownDataSource("~/Tests/{method}.md")]
         public async Task TestObjectOrException(
             ObjectOrException<FormulaireWebFRW1DO> formulaireWebFRW1DO,
             Expected expected)
@@ -341,14 +335,14 @@ namespace MDAT.Tests
 
             mock.Setup(e => e.ReturnVal()).ReturnsOrThrows(formulaireWebFRW1DO);
 
-            _ = await Verify.Assert(() => Task.FromResult(new Test().ReturnTest(mock.Object)), expected);
+            _ = await Verify.Assert(() => Task.FromResult(new Sample().ReturnTest(mock.Object)), expected);
         }
 
         /// <summary>
         /// Test jsonPath array count
         /// </summary>
-        [TestMethod]
-        [MarkdownTest("~/Tests/{method}.md")]
+        [Test]
+        [MarkdownDataSource("~/Tests/{method}.md")]
         public async Task TestObjectOrExceptionAsync(
             ObjectOrException<FormulaireWebFRW1DO> formulaireWebFRW1DO,
             Expected expected)
@@ -357,14 +351,14 @@ namespace MDAT.Tests
 
             _ = mock.Setup(e => e.ReturnValAsync()).ReturnsOrThrowsAsync(formulaireWebFRW1DO);
 
-            _ = await Verify.Assert(async () => await new Test().ReturnTestAsync(mock.Object), expected);
+            _ = await Verify.Assert(async () => await new Sample().ReturnTestAsync(mock.Object), expected);
         }
 
         /// <summary>
         /// Test object deserialization 
         /// </summary>
-        [TestMethod]
-        [MarkdownTest("~\\Tests\\{method}.md")]
+        [Test]
+        [MarkdownDataSource("~\\Tests\\{method}.md")]
         public async Task Test_keypairvalues(List<KeyValuePair<string, string>> input, Expected expected)
         {
 
@@ -375,8 +369,8 @@ namespace MDAT.Tests
         /// <summary>
         /// Test StringValues
         /// </summary>
-        [TestMethod]
-        [MarkdownTest("~\\Tests\\{method}.md")]
+        [Test]
+        [MarkdownDataSource("~\\Tests\\{method}.md")]
         public async Task Test_StringValues(StringValues input, Expected expected)
         {
             _ = await Verify.Assert(() =>
@@ -386,7 +380,7 @@ namespace MDAT.Tests
         /// <summary>
         /// Test class
         /// </summary>
-        public class Test
+        public class Sample
         {
             /// <summary>
             /// Return Test

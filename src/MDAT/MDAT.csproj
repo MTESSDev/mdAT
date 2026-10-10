@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Front-door package: no code, it only brings MDAT.TUnit (and so MDAT.Core).
+    It keeps the "MDAT" name known by the users of the 1.x versions, so that 2.0 shows up as their update.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <GenerateDocumentationFile>False</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
+    <RootNamespace>MDAT</RootNamespace>
+    <AssemblyName>MDAT</AssemblyName>
+    <PackageId>MDAT</PackageId>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <Authors>anisite</Authors>
+    <Company>MESS</Company>
+    <PackageProjectUrl>https://github.com/MTESSDev/mdAT</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/MTESSDev/mdAT</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <Version>2.0.0-beta.1</Version>
+    <Description>Markdown Auto-Tests for .net 8+ and TUnit: write your test cases in markdown files. This package brings MDAT.TUnit and MDAT.Core.</Description>
+    <PackageTags>markdown;testing;yaml;tunit;test-automation</PackageTags>
+    <PackageReleaseNotes>mdAT 2.0 replaces MSTest by TUnit and ships as MDAT.Core (framework independent) and MDAT.TUnit. See the migration section of the README. Projects staying on MSTest can keep using 1.x.</PackageReleaseNotes>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MDAT.TUnit\MDAT.TUnit.csproj" />
+  </ItemGroup>
+
+</Project>
