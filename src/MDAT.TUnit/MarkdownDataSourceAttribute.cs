@@ -8,7 +8,7 @@ namespace MDAT;
 /// Rows are produced in-process as factories, so arguments are never serialized by the test framework.
 /// </summary>
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-public sealed class MarkdownDataSourceAttribute : Attribute, IDataSourceAttribute
+public class MarkdownDataSourceAttribute : Attribute, IDataSourceAttribute
 {
     private readonly string _filePath;
 

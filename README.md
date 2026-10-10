@@ -144,8 +144,8 @@ Les fichiers `.md` ne changent pas et restent aux mêmes chemins (`~/` désigne 
 |---|---|
 | `[TestClass]` | (retirer) |
 | `[TestMethod]` | `[Test]` |
-| `[MarkdownTest("~/Tests/{method}.md")]` | `[MarkdownDataSource("~/Tests/{method}.md")]` |
-| `[YamlFileData("~/Tests/x.yaml")]` | `[YamlFileDataSource("~/Tests/x.yaml")]` |
+| `[MarkdownTest("~/Tests/{method}.md")]` | `[MarkdownDataSource("~/Tests/{method}.md")]` (l'ancien nom reste utilisable, voir ci-dessous) |
+| `[YamlFileData("~/Tests/x.yaml")]` | `[YamlFileDataSource("~/Tests/x.yaml")]` (idem) |
 | `[DataRow(...)]` | `[Arguments(...)]` |
 | `[DynamicData(...)]` | `[MethodDataSource(...)]` |
 | `[TestInitialize]` / `[TestCleanup]` | `[Before(Test)]` / `[After(Test)]` |
@@ -155,12 +155,14 @@ Les fichiers `.md` ne changent pas et restent aux mêmes chemins (`~/` désigne 
 
 `Verify.Assert()`, `Expected`, `ObjectOrException<T>`, `ReturnsOrThrows` et l'inclusion de fichiers (`!include`) fonctionnent sans changement. Les types restent dans l'espace de noms `MDAT`.
 
+Les noms `[MarkdownTest]` et `[YamlFileData]` continuent de fonctionner dans `MDAT.TUnit` : ce sont des alias exacts de `[MarkdownDataSource]` et `[YamlFileDataSource]`, sans avertissement. Les deux noms sont valides : vos fichiers de test n'ont à changer que pour passer de MSTest à TUnit (`[TestClass]`, `[TestMethod]`, etc.), pas pour mdAT.
+
 ### 3. Changements d'API
 
 | mdAT 1.x | mdAT 2.0 |
 |---|---|
-| `MarkdownTestAttribute` | `MarkdownDataSourceAttribute` (`MDAT.TUnit`) ; la lecture des cas est dans `MarkdownTestSource.GetCases()` (`MDAT.Core`) |
-| `YamlFileDataAttribute` | `YamlFileDataSourceAttribute` ; lecture dans `YamlFileTestSource.GetCases()` |
+| `MarkdownTestAttribute` | `MarkdownDataSourceAttribute` (`MDAT.TUnit`) ; la lecture des cas est dans `MarkdownTestSource.GetCases()` (`MDAT.Core`). `MarkdownTestAttribute` reste disponible, comme alias de `MarkdownDataSourceAttribute`. |
+| `YamlFileDataAttribute` | `YamlFileDataSourceAttribute` ; lecture dans `YamlFileTestSource.GetCases()`. `YamlFileDataAttribute` reste disponible, comme alias de `YamlFileDataSourceAttribute`. |
 | `InternalTestFailureException` (MSTest) | `MdatTestDefinitionException` |
 | `Quibble.Xunit.JsonAssertException`, `JsonDiffConfig`, `JsonAssert` | `MDAT.JsonAssertException`, `MDAT.JsonDiffConfig`, `MDAT.JsonAssert` |
 
@@ -383,8 +385,8 @@ The `.md` files do not change and stay at the same paths (`~/` still means the r
 |---|---|
 | `[TestClass]` | (remove) |
 | `[TestMethod]` | `[Test]` |
-| `[MarkdownTest("~/Tests/{method}.md")]` | `[MarkdownDataSource("~/Tests/{method}.md")]` |
-| `[YamlFileData("~/Tests/x.yaml")]` | `[YamlFileDataSource("~/Tests/x.yaml")]` |
+| `[MarkdownTest("~/Tests/{method}.md")]` | `[MarkdownDataSource("~/Tests/{method}.md")]` (the old name still works, see below) |
+| `[YamlFileData("~/Tests/x.yaml")]` | `[YamlFileDataSource("~/Tests/x.yaml")]` (same) |
 | `[DataRow(...)]` | `[Arguments(...)]` |
 | `[DynamicData(...)]` | `[MethodDataSource(...)]` |
 | `[TestInitialize]` / `[TestCleanup]` | `[Before(Test)]` / `[After(Test)]` |
@@ -394,12 +396,14 @@ The `.md` files do not change and stay at the same paths (`~/` still means the r
 
 `Verify.Assert()`, `Expected`, `ObjectOrException<T>`, `ReturnsOrThrows` and file inclusion (`!include`) work unchanged. Types stay in the `MDAT` namespace.
 
+The `[MarkdownTest]` and `[YamlFileData]` names keep working in `MDAT.TUnit`: they are exact aliases of `[MarkdownDataSource]` and `[YamlFileDataSource]`, without any warning. Both names are valid: your test files only have to change to go from MSTest to TUnit (`[TestClass]`, `[TestMethod]`, etc.), not because of mdAT.
+
 ### 3. API changes
 
 | mdAT 1.x | mdAT 2.0 |
 |---|---|
-| `MarkdownTestAttribute` | `MarkdownDataSourceAttribute` (`MDAT.TUnit`); reading the cases is done by `MarkdownTestSource.GetCases()` (`MDAT.Core`) |
-| `YamlFileDataAttribute` | `YamlFileDataSourceAttribute`; reading done by `YamlFileTestSource.GetCases()` |
+| `MarkdownTestAttribute` | `MarkdownDataSourceAttribute` (`MDAT.TUnit`); reading the cases is done by `MarkdownTestSource.GetCases()` (`MDAT.Core`). `MarkdownTestAttribute` remains available, as an alias of `MarkdownDataSourceAttribute`. |
+| `YamlFileDataAttribute` | `YamlFileDataSourceAttribute`; reading done by `YamlFileTestSource.GetCases()`. `YamlFileDataAttribute` remains available, as an alias of `YamlFileDataSourceAttribute`. |
 | `InternalTestFailureException` (MSTest) | `MdatTestDefinitionException` |
 | `Quibble.Xunit.JsonAssertException`, `JsonDiffConfig`, `JsonAssert` | `MDAT.JsonAssertException`, `MDAT.JsonDiffConfig`, `MDAT.JsonAssert` |
 

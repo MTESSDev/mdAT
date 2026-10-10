@@ -57,3 +57,22 @@ public class AdapterTests
         _ = await Verify.Assert(() => Task.FromResult(new { values, items }), expected);
     }
 }
+
+/// <summary>The names used by mdAT 1.x still work, without any warning, and read the same files.</summary>
+public class LegacyAttributeNamesTests
+{
+    [Test]
+    [MarkdownTest("~/Tests/adapter-simple.md")]
+    public async Task MarkdownTest_is_an_alias_of_MarkdownDataSource(int a, string b)
+    {
+        await Assert.That(b).IsNotNull();
+        await Assert.That(a).IsGreaterThan(0);
+    }
+
+    [Test]
+    [YamlFileData("~/Tests/test.yaml")]
+    public async Task YamlFileData_is_an_alias_of_YamlFileDataSource(int val1, int val2, string expected)
+    {
+        _ = await Verify.Assert(() => Task.FromResult(val1 + val2), expected);
+    }
+}

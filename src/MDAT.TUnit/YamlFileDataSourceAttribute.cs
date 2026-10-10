@@ -6,7 +6,7 @@ namespace MDAT;
 /// TUnit data source reading test cases from a multi-document YAML file (documents separated by <c>---</c>).
 /// </summary>
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-public sealed class YamlFileDataSourceAttribute : Attribute, IDataSourceAttribute
+public class YamlFileDataSourceAttribute : Attribute, IDataSourceAttribute
 {
     private readonly string _filePath;
 
