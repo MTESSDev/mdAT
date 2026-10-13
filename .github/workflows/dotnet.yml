@@ -128,15 +128,18 @@ jobs:
           8.0.x
           9.0.x
           10.0.x
-    - name: Setup MSBuild
-      uses: microsoft/setup-msbuild@v2
     - name: Pack the NuGet packages
       run: dotnet pack src/MDAT.slnx -c Release -o dist
-    # The extension is built for .NET Framework: MSBuild of Visual Studio, not `dotnet build`
+    # The extension is built for .NET Framework: MSBuild of Visual Studio (found with vswhere), not `dotnet build`.
+    # Only the actions of GitHub are used here: the organization may not allow the others.
     - name: Build the Visual Studio extension
-      run: msbuild src/MDAT.VisualStudio/MDAT.VisualStudio.csproj -restore -p:Configuration=Release -v:minimal
-    - name: Copy the extension
-      run: Copy-Item src/MDAT.VisualStudio/bin/Release/net472/MDAT.VisualStudio.vsix dist/
+      shell: pwsh
+      run: |
+        $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+        $msbuild = & $vswhere -latest -prerelease -requires Microsoft.Component.MSBuild -find "MSBuild\**\Bin\MSBuild.exe" | Select-Object -First 1
+        & $msbuild src/MDAT.VisualStudio/MDAT.VisualStudio.csproj -restore -p:Configuration=Release -v:minimal
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+        Copy-Item src/MDAT.VisualStudio/bin/Release/net472/MDAT.VisualStudio.vsix dist/
     - name: Upload dist
       uses: actions/upload-artifact@v4
       with:
@@ -145,8 +148,11 @@ jobs:
         if-no-files-found: error
     - name: Attach to the GitHub release
       if: startsWith(github.ref, 'refs/tags/v')
-      uses: softprops/action-gh-release@v2
-      with:
-        files: dist/*
-        prerelease: ${{ contains(github.ref_name, '-') }}
-        generate_release_notes: true
+      shell: pwsh
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        $options = @()
+        if ($env:GITHUB_REF_NAME.Contains('-')) { $options += '--prerelease' }
+        gh release create $env:GITHUB_REF_NAME (Get-ChildItem dist/*).FullName --title $env:GITHUB_REF_NAME --generate-notes @options
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
