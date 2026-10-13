@@ -50,7 +50,8 @@ mdAT ajoute cette ligne et la corrige quand le test change de ligne, à chaque d
 L'éditeur de Visual Studio ne suit pas les liens relatifs d'un fichier Markdown. L'extension `MDAT.VisualStudio.vsix` règle cela : la ligne `> C# :` est soulignée comme un lien et **Ctrl+clic ouvre le fichier C# à la ligne du test**. Seule la ligne gérée par mdAT (celle qui porte le commentaire `<!-- mdat:... -->`) est concernée, les autres liens du fichier ne sont pas touchés.
 
 - Fichier : [`dist/MDAT.VisualStudio.vsix`](dist/MDAT.VisualStudio.vsix) dans ce dépôt (construit aussi par l'intégration continue).
-- Installation : fermer Visual Studio, puis double-cliquer sur le fichier. Déclarée pour Visual Studio 2022 et 2026 (x64 et ARM64). **Copiez le fichier hors d'un dossier synchronisé par OneDrive avant de l'installer** : l'installateur échoue sur ces fichiers.
+- **F7 va d'un fichier à l'autre** : dans un `.md`, F7 (« Afficher le code ») ouvre le test C# (le lien de la ligne du curseur, sinon le premier du fichier) ; dans une méthode de test C#, F7 ouvre le `.md` qui porte son marqueur `<!-- mdat:... -->`. Le curseur peut être dans le corps, dans les attributs ou dans la documentation de la méthode. Le `.md` n'a son marqueur qu'après la première découverte des tests : tant que les tests n'ont pas tourné, F7 l'indique dans la barre d'état. Dans les autres cas, F7 garde son comportement habituel.
+- Installation : fermer Visual Studio, puis double-cliquer sur le fichier. Essayée avec Visual Studio 2026 ; déclarée aussi pour 2022 (x64 et ARM64), sans essai. **Copiez le fichier hors d'un dossier synchronisé par OneDrive avant de l'installer** : l'installateur échoue sur ces fichiers.
 - Construction : `msbuild src\MDAT.VisualStudio\MDAT.VisualStudio.csproj -restore -p:Configuration=Release` (MSBuild de Visual Studio ; ce projet n'est pas dans `MDAT.slnx`).
 
 ````csharp
@@ -336,7 +337,8 @@ mdAT adds this line and corrects it when the test moves to another line, each ti
 The Visual Studio editor does not follow the relative links of a markdown file. The `MDAT.VisualStudio.vsix` extension fixes this: the `> C# :` line is underlined like a link and **Ctrl+click opens the C# file at the line of the test**. Only the line managed by mdAT (the one with the `<!-- mdat:... -->` comment) is concerned, the other links of the file are left alone.
 
 - File: [`dist/MDAT.VisualStudio.vsix`](dist/MDAT.VisualStudio.vsix) in this repository (also built by continuous integration).
-- Installation: close Visual Studio, then double-click the file. Declared for Visual Studio 2022 and 2026 (x64 and ARM64). **Copy the file out of a folder synchronized by OneDrive before installing it**: the installer fails on such files.
+- **F7 goes from one file to the other**: in a `.md`, F7 ("View Code") opens the C# test (the link of the line of the cursor, else the first one of the file); in a C# test method, F7 opens the `.md` that carries its `<!-- mdat:... -->` marker. The cursor can be in the body, in the attributes or in the documentation of the method. The `.md` only has its marker after the tests have been discovered once: until then, F7 says so in the status bar. Anywhere else, F7 keeps its usual behavior.
+- Installation: close Visual Studio, then double-click the file. Tried with Visual Studio 2026; also declared for 2022 (x64 and ARM64), untried. **Copy the file out of a folder synchronized by OneDrive before installing it**: the installer fails on such files.
 - Build: `msbuild src\MDAT.VisualStudio\MDAT.VisualStudio.csproj -restore -p:Configuration=Release` (MSBuild of Visual Studio; this project is not in `MDAT.slnx`).
 
 ````csharp

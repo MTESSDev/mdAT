@@ -73,11 +73,11 @@ namespace MDAT.VisualStudio
 
             try
             {
-                Open(MdatLinkParser.Resolve(_document.FilePath, link), link.Line);
+                FileOpener.Open(_services, MdatLinkParser.Resolve(_document.FilePath, link), link.Line);
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException or NotSupportedException)
             {
-                Notify($"mdAT: {ex.Message}");
+                FileOpener.Notify(_services, $"mdAT: {ex.Message}");
             }
         }
 
@@ -103,37 +103,6 @@ namespace MDAT.VisualStudio
             var line = position.Value.GetContainingLine();
 
             return MdatLinkParser.TryFind(line.GetText(), position.Value.Position - line.Start.Position, out link);
-        }
-
-        private void Open(string path, int line)
-        {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            if (!File.Exists(path))
-            {
-                Notify($"mdAT: the file {path} does not exist.");
-                return;
-            }
-
-            VsShellUtilities.OpenDocument(_services, path, Guid.Empty, out _, out _, out var frame);
-
-            var textView = frame is null ? null : VsShellUtilities.GetTextView(frame);
-
-            if (textView is not null && line > 0)
-            {
-                textView.SetCaretPos(line - 1, 0);
-                textView.CenterLines(line - 1, 1);
-            }
-        }
-
-        private void Notify(string message)
-        {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            if (_services.GetService(typeof(SVsStatusbar)) is IVsStatusbar statusBar)
-            {
-                statusBar.SetText(message);
-            }
         }
     }
 }

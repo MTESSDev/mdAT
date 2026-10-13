@@ -78,7 +78,7 @@ public class VisualStudioLinkParserTests
 
         foreach (var markdown in Directory.EnumerateFiles(Path.GetFullPath(folder), "*.md"))
         {
-            foreach (var text in File.ReadLines(markdown).Where(l => l.Contains("<!-- mdat:")))
+            foreach (var text in MarkdownFinder.ReadLines(markdown).Where(l => l.Contains("<!-- mdat:")))
             {
                 var links = MdatLinkParser.FindAll(text).ToList();
 
