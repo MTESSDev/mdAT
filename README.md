@@ -28,7 +28,7 @@ Chaque cas du fichier Markdown devient un test distinct dans l'explorateur de te
 
 ### Lien vers le test C# dans le fichier Markdown
 
-Chaque fichier Markdown garde, juste sous son titre, un lien vers le test C# qui le lit (Ctrl+clic pour y aller, avec la ligne) :
+Chaque fichier Markdown garde, juste sous son titre, un lien vers le test C# qui le lit, avec la ligne (cliquable dans VS Code et sur GitHub ; dans Visual Studio, avec l'[extension](#extension-visual-studio--lien-cliquable) ci-dessous) :
 
 ```md
 # Md1
@@ -44,6 +44,14 @@ mdAT ajoute cette ligne et la corrige quand le test change de ligne, à chaque d
 - le commentaire `<!-- mdat:... -->` identifie la ligne gérée par mdAT : vous pouvez écrire autour sans qu'elle soit perdue. Un fichier partagé par plusieurs tests garde une ligne par test ;
 - un fichier en lecture seule, ou dont le fichier C# est introuvable à ce chemin, est laissé tel quel, sans erreur ;
 - à la première exécution, **tous vos fichiers Markdown existants reçoivent cette ligne** : c'est un changement unique à relire puis à committer. Ensuite, un fichier ne change que si son test change de ligne.
+
+#### Extension Visual Studio : lien cliquable
+
+L'éditeur de Visual Studio ne suit pas les liens relatifs d'un fichier Markdown. L'extension `MDAT.VisualStudio.vsix` règle cela : la ligne `> C# :` est soulignée comme un lien et **Ctrl+clic ouvre le fichier C# à la ligne du test**. Seule la ligne gérée par mdAT (celle qui porte le commentaire `<!-- mdat:... -->`) est concernée, les autres liens du fichier ne sont pas touchés.
+
+- Fichier : [`dist/MDAT.VisualStudio.vsix`](dist/MDAT.VisualStudio.vsix) dans ce dépôt (construit aussi par l'intégration continue).
+- Installation : fermer Visual Studio, puis double-cliquer sur le fichier. Déclarée pour Visual Studio 2022 et 2026 (x64 et ARM64). **Copiez le fichier hors d'un dossier synchronisé par OneDrive avant de l'installer** : l'installateur échoue sur ces fichiers.
+- Construction : `msbuild src\MDAT.VisualStudio\MDAT.VisualStudio.csproj -restore -p:Configuration=Release` (MSBuild de Visual Studio ; ce projet n'est pas dans `MDAT.slnx`).
 
 ````csharp
 using MDAT;
@@ -306,7 +314,7 @@ Each case of the markdown file is its own test in the test explorer, and its loc
 
 ### Link to the C# test in the markdown file
 
-Each markdown file keeps, right under its title, a link to the C# test that reads it (Ctrl+click to go there, to the line):
+Each markdown file keeps, right under its title, a link to the C# test that reads it, with the line (clickable in VS Code and on GitHub; in Visual Studio, with the [extension](#visual-studio-extension-clickable-link) below):
 
 ```md
 # Md1
@@ -322,6 +330,14 @@ mdAT adds this line and corrects it when the test moves to another line, each ti
 - the `<!-- mdat:... -->` comment identifies the line managed by mdAT: you can write around it without losing it. A file shared by several tests keeps one line per test;
 - a read-only file, or a file whose C# file cannot be found at that path, is left as it is, without any error;
 - on the first run, **all your existing markdown files get this line**: this is a one-time change to review and commit. After that, a file only changes when its test moves to another line.
+
+#### Visual Studio extension: clickable link
+
+The Visual Studio editor does not follow the relative links of a markdown file. The `MDAT.VisualStudio.vsix` extension fixes this: the `> C# :` line is underlined like a link and **Ctrl+click opens the C# file at the line of the test**. Only the line managed by mdAT (the one with the `<!-- mdat:... -->` comment) is concerned, the other links of the file are left alone.
+
+- File: [`dist/MDAT.VisualStudio.vsix`](dist/MDAT.VisualStudio.vsix) in this repository (also built by continuous integration).
+- Installation: close Visual Studio, then double-click the file. Declared for Visual Studio 2022 and 2026 (x64 and ARM64). **Copy the file out of a folder synchronized by OneDrive before installing it**: the installer fails on such files.
+- Build: `msbuild src\MDAT.VisualStudio\MDAT.VisualStudio.csproj -restore -p:Configuration=Release` (MSBuild of Visual Studio; this project is not in `MDAT.slnx`).
 
 ````csharp
 using MDAT;
