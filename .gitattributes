@@ -1,0 +1,4 @@
+*.pdf binary
+*.nupkg binary
+*.snupkg binary
+*.vsix binary

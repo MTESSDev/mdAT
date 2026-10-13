@@ -1,55 +1,44 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
+  <!--
+    Front-door package: no code, it only brings MDAT.TUnit (and so MDAT.Core).
+    It keeps the "MDAT" name known by the users of the 1.x versions, so that 2.0 shows up as their update.
+  -->
   <PropertyGroup>
-    <TargetFrameworks>net6.0;net7.0;net8.0;net9.0;net10.0</TargetFrameworks>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-		<Authors>anisite</Authors>
-		<Company>MESS</Company>
-		<PackageProjectUrl>https://github.com/MTESSDev/mdAT</PackageProjectUrl>
-		<RepositoryUrl>https://github.com/MTESSDev/mdAT</RepositoryUrl>
-		<Version>1.6</Version>
-		<Description>Markdown Auto-Tests for .net 6+, based on MSTestsV2 DataSource.</Description>
+    <TargetFramework>net8.0</TargetFramework>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <GenerateDocumentationFile>False</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
+    <RootNamespace>MDAT</RootNamespace>
+    <AssemblyName>MDAT</AssemblyName>
+    <PackageId>MDAT</PackageId>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <Authors>anisite</Authors>
+    <Company>MESS</Company>
+    <PackageProjectUrl>https://github.com/MTESSDev/mdAT</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/MTESSDev/mdAT</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <Version>2.0.0-beta.6</Version>
+    <Description>Markdown Auto-Tests for .net 8+ and TUnit: write your test cases in markdown files. This package brings MDAT.TUnit and MDAT.Core.</Description>
+    <PackageTags>markdown;testing;yaml;tunit;test-automation</PackageTags>
+    <PackageReleaseNotes>mdAT 2.0 replaces MSTest by TUnit and ships as MDAT.Core (framework independent) and MDAT.TUnit. See the migration section of the README. Projects staying on MSTest can keep using 1.x. Beta 2: a JsonDocument or JsonElement whose root is a string holding a JSON object or array is written as that object or array again (mdAT 1.4 behaviour); parallelism and code coverage notes added to the migration guide. Beta 3: the test explorer now points each case to its title in the markdown file (or to the start of its document in a YAML file) instead of the C# method. Beta 4: a test case is named Method_Title@file.md (file name last, no path); the title of the raw output written by Verify.Assert shows readable type names (for example List of JsonNode instead of the compiler name). Beta 5: each markdown test file keeps a link to its C# test, inserted or corrected when the line of the test changes and never written again when nothing changed; the name of a case no longer repeats the name of the method; fixes for a markdown file shared by several tests. Beta 6: a case marked skipped in a markdown file is now listed and reported as ignored by the test explorer (the reason is in French on a French computer) instead of being left out of the list; likewise the other cases of a file with a selected case stay in the list, ignored, instead of being hidden.</PackageReleaseNotes>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
   </PropertyGroup>
 
-	<PropertyGroup>
-		<DocumentationFile>obj\$(Configuration)\YamlHttpClient.xml</DocumentationFile>
-		<PackageReadmeFile>README.md</PackageReadmeFile>
-		<PackageLicenseFile>LICENSE</PackageLicenseFile>
-	</PropertyGroup>
-
-	<ItemGroup>
-	  <None Include="..\..\LICENSE">
-	    <Pack>True</Pack>
-	    <PackagePath>\</PackagePath>
-	  </None>
-	  <None Include="..\..\README.md">
-	    <Pack>True</Pack>
-	    <PackagePath>\</PackagePath>
-	  </None>
-	</ItemGroup>
-    
   <ItemGroup>
-    <PackageReference Include="LoxSmoke.DocXml" Version="3.6.1" />
-    <PackageReference Include="Markdig" Version="0.37.0" />
-    <PackageReference Include="Microsoft.Extensions.Primitives" Version="2.2.0" />
-    <PackageReference Include="Moq" Version="4.18.4" />
-    <PackageReference Include="MSTest.TestFramework" Version="3.10.4" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="Quibble.Xunit" Version="0.3.1" />
-    <PackageReference Include="System.Data.SqlClient" Version="4.8.6" />
-    <PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
-    <PackageReference Include="YamlDotNet" Version="16.3.0" />
+    <None Include="..\..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="YamlDotNet.System.Text.Json" Version="1.5.1" Condition="'$(TargetFramework)' == 'net6.0'" />
-    <PackageReference Include="YamlDotNet.System.Text.Json" Version="1.5.1" Condition="'$(TargetFramework)' == 'net7.0'" />
-    <PackageReference Include="YamlDotNet.System.Text.Json" Version="1.5.1" Condition="'$(TargetFramework)' == 'net8.0'" />
-    <PackageReference Include="YamlDotNet.System.Text.Json" Version="1.6.4" Condition="'$(TargetFramework)' == 'net9.0'" />
-    <PackageReference Include="YamlDotNet.System.Text.Json" Version="1.7.1" Condition="'$(TargetFramework)' == 'net10.0'" />
+    <ProjectReference Include="..\MDAT.TUnit\MDAT.TUnit.csproj" />
   </ItemGroup>
 
 </Project>
