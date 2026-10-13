@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
+  <Metadata>
+    <Identity Id="MDAT.SourceLinks.5d0b6c1e-3f0a-4a53-9f0e-2c6f6a1b7d11" Version="1.0.0" Language="en-US" Publisher="anisite" />
+    <DisplayName>mdAT source links</DisplayName>
+    <Description xml:space="preserve">Ctrl+click on the "C#" link that mdAT keeps at the top of a markdown test file to open the C# test on its line. The link is drawn like a link (underlined).</Description>
+    <MoreInfo>https://github.com/MTESSDev/mdAT</MoreInfo>
+    <Tags>markdown, testing, mdat</Tags>
+  </Metadata>
+  <Installation>
+    <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[17.0,19.0)">
+      <ProductArchitecture>amd64</ProductArchitecture>
+    </InstallationTarget>
+    <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[17.0,19.0)">
+      <ProductArchitecture>arm64</ProductArchitecture>
+    </InstallationTarget>
+  </Installation>
+  <Dependencies>
+    <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="[4.7.2,)" />
+  </Dependencies>
+  <Prerequisites>
+    <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[17.0,)" DisplayName="Visual Studio core editor" />
+  </Prerequisites>
+  <Assets>
+    <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%|" />
+  </Assets>
+</PackageManifest>

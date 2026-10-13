@@ -1,0 +1,46 @@
+<Project>
+
+  <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.props" />
+
+  <!--
+    Visual Studio extension (VSIX): Ctrl+click on the link to the C# test that mdAT keeps in a markdown file.
+    Not part of MDAT.slnx: it is built with MSBuild of Visual Studio (.NET Framework), not with `dotnet build`:
+      msbuild src\MDAT.VisualStudio\MDAT.VisualStudio.csproj -restore -p:Configuration=Release
+  -->
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <RootNamespace>MDAT.VisualStudio</RootNamespace>
+    <AssemblyName>MDAT.VisualStudio</AssemblyName>
+    <GeneratePkgDefFile>false</GeneratePkgDefFile>
+    <IncludeAssemblyInVSIXContainer>true</IncludeAssemblyInVSIXContainer>
+    <IncludeDebugSymbolsInVSIXContainer>false</IncludeDebugSymbolsInVSIXContainer>
+    <IncludeDebugSymbolsInLocalVSIXDeployment>false</IncludeDebugSymbolsInLocalVSIXDeployment>
+    <CopyBuildOutputToOutputDirectory>true</CopyBuildOutputToOutputDirectory>
+    <CopyOutputSymbolsToOutputDirectory>false</CopyOutputSymbolsToOutputDirectory>
+    <DeployExtension>false</DeployExtension>
+    <IsPackable>false</IsPackable>
+    <NoWarn>$(NoWarn);VSTHRD010;VSTHRD109</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.VisualStudio.SDK" Version="17.14.40265" ExcludeAssets="runtime" />
+    <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="18.9.820" />
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="System.Xaml" />
+    <Reference Include="WindowsBase" />
+    <Reference Include="System.ComponentModel.Composition" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="source.extension.vsixmanifest" SubType="Designer" />
+  </ItemGroup>
+
+  <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.targets" />
+
+  <!-- the targets that build the .vsix come with the Microsoft.VSSDK.BuildTools package, which only sets the paths -->
+  <Import Project="$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets" Condition="'$(VSToolsPath)' != ''" />
+
+</Project>

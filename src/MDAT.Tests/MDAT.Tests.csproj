@@ -25,4 +25,9 @@
     <Folder Include="Tests\Generated\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- the reading of the link of the Visual Studio extension, which has no dependency on Visual Studio -->
+    <Compile Include="..\MDAT.VisualStudio\MdatLinkParser.cs" Link="VisualStudio\MdatLinkParser.cs" />
+  </ItemGroup>
+
 </Project>

@@ -14,6 +14,7 @@ permissions:
 on:
   push:
     branches: [ "main" ]
+    tags: [ "v*" ]
   pull_request:
     branches: [ "main" ]
   workflow_dispatch:
@@ -106,3 +107,46 @@ jobs:
         name: nuget-packages
         path: artifacts/*
         if-no-files-found: error
+
+  # The files to download: the NuGet packages and the Visual Studio extension. Nothing goes to nuget.org from here.
+  # Every run keeps them as the "dist" artifact; a tag "v..." also attaches them to a GitHub release.
+  dist:
+    needs: build
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    defaults:
+      run:
+        working-directory: .
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version:  |
+          8.0.x
+          9.0.x
+          10.0.x
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v2
+    - name: Pack the NuGet packages
+      run: dotnet pack src/MDAT.slnx -c Release -o dist
+    # The extension is built for .NET Framework: MSBuild of Visual Studio, not `dotnet build`
+    - name: Build the Visual Studio extension
+      run: msbuild src/MDAT.VisualStudio/MDAT.VisualStudio.csproj -restore -p:Configuration=Release -v:minimal
+    - name: Copy the extension
+      run: Copy-Item src/MDAT.VisualStudio/bin/Release/net472/MDAT.VisualStudio.vsix dist/
+    - name: Upload dist
+      uses: actions/upload-artifact@v4
+      with:
+        name: dist
+        path: dist/*
+        if-no-files-found: error
+    - name: Attach to the GitHub release
+      if: startsWith(github.ref, 'refs/tags/v')
+      uses: softprops/action-gh-release@v2
+      with:
+        files: dist/*
+        prerelease: ${{ contains(github.ref_name, '-') }}
+        generate_release_notes: true
