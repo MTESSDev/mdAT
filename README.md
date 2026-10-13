@@ -196,6 +196,8 @@ Les noms `[MarkdownTest]` et `[YamlFileData]` continuent de fonctionner dans `MD
 
 Les dépendances `Quibble.Xunit` (donc xunit), `MSTest.TestFramework`, `System.Data.SqlClient` et `System.Text.RegularExpressions` sont retirées, ce qui supprime leurs vulnérabilités transitives connues. `Moq` reste une dépendance de `MDAT.Core` pour les méthodes `ReturnsOrThrows`.
 
+Un cas marqué `skipped` dans le fichier Markdown (`` ``````yaml skipped ``) **n'est plus absent de la liste** : il apparaît dans l'explorateur de tests comme **ignoré**, avec une raison dans la langue d'interface du poste (« Marqué comme ignoré (skipped) dans le fichier Markdown » en français, « Marked as skipped in the markdown file » sinon). Son YAML n'est pas lu (il peut être inachevé) et la méthode de test n'est pas appelée. De même, quand un cas est marqué `selected`, seuls les cas `selected` s'exécutent : **les autres restent dans la liste, ignorés** (« Un autre cas est marqué selected dans le fichier Markdown » en français, « Another case is marked selected in the markdown file » sinon), au lieu d'être masqués. Leur YAML n'est pas lu non plus. Un cas à la fois `selected` et `skipped` reste ignoré et ne sélectionne rien.
+
 ### 4. Convertisseurs YAML globaux
 
 TUnit lit les cas des sources de données **pendant la découverte des tests**, avant l'exécution de tout hook de classe ou de test. Un convertisseur enregistré avec `MdatConfig.AddYamlTypeConverter()` dans un `[ClassInitialize]` / `[Before(Class)]` arrive donc trop tard. Enregistrez-le dans un hook de découverte :
@@ -482,6 +484,8 @@ The `[MarkdownTest]` and `[YamlFileData]` names keep working in `MDAT.TUnit`: th
 | `Quibble.Xunit.JsonAssertException`, `JsonDiffConfig`, `JsonAssert` | `MDAT.JsonAssertException`, `MDAT.JsonDiffConfig`, `MDAT.JsonAssert` |
 
 The `Quibble.Xunit` (hence xunit), `MSTest.TestFramework`, `System.Data.SqlClient` and `System.Text.RegularExpressions` dependencies are removed, which removes their known transitive vulnerabilities. `Moq` remains a dependency of `MDAT.Core` for the `ReturnsOrThrows` methods.
+
+A case marked `skipped` in the markdown file (`` ``````yaml skipped ``) **is no longer missing from the list**: it shows in the test explorer as **ignored**, with a reason in the interface language of the computer ("Marked as skipped in the markdown file", or "Marqué comme ignoré (skipped) dans le fichier Markdown" on a French one). Its YAML is not read (it may be unfinished) and the test method is not called. Likewise, when a case is marked `selected`, only the `selected` cases run: **the others stay in the list, ignored** ("Another case is marked selected in the markdown file", or "Un autre cas est marqué selected dans le fichier Markdown" on a French computer), instead of being hidden. Their YAML is not read either. A case that is both `selected` and `skipped` stays ignored and selects nothing.
 
 ### 4. Global YAML converters
 

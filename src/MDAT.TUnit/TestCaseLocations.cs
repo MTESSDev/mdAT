@@ -21,7 +21,8 @@ internal static class TestCaseLocations
             ByDisplayName[Key(testClass, testCase.DisplayName)] = (testCase.FilePath, testCase.Line);
         }
 
-        var row = new TestDataRow<object?[]>(testCase.Arguments, DisplayName: testCase.DisplayName);
+        // a case marked "skipped" in the markdown file is reported as ignored by the test explorer and never run
+        var row = new TestDataRow<object?[]>(testCase.Arguments, DisplayName: testCase.DisplayName, Skip: testCase.SkipReason);
 
         return () => Task.FromResult<object?[]?>(new object?[] { row });
     }

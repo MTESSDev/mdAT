@@ -41,6 +41,26 @@ public static class Extensions
         }
     }
 
+    /// <summary>
+    /// Writes the file of <c>generateExpectedData</c>. Test projects built for several frameworks run side by side and write
+    /// the same file: a file that another process is writing is tried again a few times instead of failing the test.
+    /// </summary>
+    private static async Task WriteGeneratedFile(string path, string content)
+    {
+        for (var attempt = 1; ; attempt++)
+        {
+            try
+            {
+                await File.WriteAllTextAsync(path, content);
+                return;
+            }
+            catch (IOException) when (attempt < 5)
+            {
+                await Task.Delay(50 * attempt);
+            }
+        }
+    }
+
     private static async Task MatchCheck(dynamic obj, Expected expected, VerifyStep item)
     {
         object? finalExpectedData = item.data;
@@ -60,11 +80,11 @@ public static class Extensions
                     .Build();
                 var yml = builder.Serialize(obj);
 
-                await File.WriteAllTextAsync(path, yml);
+                await WriteGeneratedFile(path, yml);
             }
             else
             {
-                await File.WriteAllTextAsync(path, data);
+                await WriteGeneratedFile(path, data);
             }
         }
 

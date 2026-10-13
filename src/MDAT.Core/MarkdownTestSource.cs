@@ -3,6 +3,7 @@ using Markdig;
 using Markdig.Syntax;
 using MDAT.Resolver;
 using System.ComponentModel;
+using System.Globalization;
 using System.Reflection;
 using System.Text;
 using YamlDotNet.Core;
@@ -16,13 +17,17 @@ namespace MDAT
     /// </summary>
     public sealed class MarkdownTestCase
     {
-        public MarkdownTestCase(object?[] arguments, string displayName, string? filePath = null, int line = 0)
+        public MarkdownTestCase(object?[] arguments, string displayName, string? filePath = null, int line = 0, string? skipReason = null)
         {
             Arguments = arguments;
             DisplayName = displayName;
             FilePath = filePath;
             Line = line;
+            SkipReason = skipReason;
         }
+
+        /// <summary>When set, the case is reported as ignored and never run: it was marked <c>skipped</c> in the markdown file.</summary>
+        public string? SkipReason { get; }
 
         public object?[] Arguments { get; }
 
@@ -94,7 +99,9 @@ namespace MDAT
             var fullPath = Path.GetFullPath(ParsedPath);
 
             List<MarkdownTestCase> to = new();
-            List<MarkdownTestCase> toSelected = new();
+
+            // When a case is marked "selected", the others are not run but stay in the list, reported as ignored
+            var anySelected = mdFile.OfType<FencedCodeBlock>().Any(block => IsCase(block) && HasArgument(block, "selected") && !HasArgument(block, "skipped"));
 
             foreach (var info in mdFile)
             {
@@ -103,36 +110,41 @@ namespace MDAT
                     SetHeadings(headings, add);
                     headingLines[add.Level - 1] = add.Line + 1;
                 }
-                else if (info is FencedCodeBlock fbc
-                        && fbc.ClosingFencedCharCount == 6
-                        && (fbc.Info?.ToLower() == "yaml" || fbc.Info?.ToLower() == "yml"))
+                else if (info is FencedCodeBlock fbc && IsCase(fbc))
                 {
                     var doc = string.Join("\n", fbc.Lines);
 
                     if (string.IsNullOrWhiteSpace(doc))
                         continue;
 
-                    if (fbc.Arguments is { } && fbc.Arguments.Contains("skipped", StringComparison.InvariantCultureIgnoreCase))
+                    // A case that is ignored is listed with its reason. Its YAML is not read (it may be unfinished or not be
+                    // the one being worked on): the test method is never called, the arguments only have to match its parameters.
+                    var ignoredBecause = HasArgument(fbc, "skipped") ? SkippedReason
+                                       : anySelected && !HasArgument(fbc, "selected") ? NotSelectedReason
+                                       : null;
+
+                    if (ignoredBecause is not null)
+                    {
+                        to.Add(new MarkdownTestCase(DefaultArguments(testMethod), DisplayName(testMethod, headings), fullPath, TitleLine(headings, headingLines, fbc.Line + 1), ignoredBecause));
                         continue;
+                    }
 
                     var values = ExtractTest(testMethod, doc, Path.GetDirectoryName(ParsedPath)!);
 
                     if (values is null) continue;
 
-                    var testCase = new MarkdownTestCase(values, DisplayName(testMethod, headings), fullPath, TitleLine(headings, headingLines, fbc.Line + 1));
-
-                    if (fbc.Arguments is { } && fbc.Arguments.Contains("selected", StringComparison.InvariantCultureIgnoreCase))
-                        toSelected.Add(testCase);
-                    else
-                        to.Add(testCase);
+                    to.Add(new MarkdownTestCase(values, DisplayName(testMethod, headings), fullPath, TitleLine(headings, headingLines, fbc.Line + 1)));
                 }
             }
 
-            if (toSelected.Any())
-                return toSelected;
-            else
-                return to;
+            return to;
         }
+
+        private static bool IsCase(FencedCodeBlock block) =>
+            block.ClosingFencedCharCount == 6 && (block.Info?.ToLower() == "yaml" || block.Info?.ToLower() == "yml");
+
+        private static bool HasArgument(FencedCodeBlock block, string argument) =>
+            block.Arguments is { } && block.Arguments.Contains(argument, StringComparison.InvariantCultureIgnoreCase);
 
         private string DisplayName(MethodInfo testMethod, string?[] headings)
         {
@@ -145,6 +157,24 @@ namespace MDAT
 
             return $"{name}@{Path.GetFileName(ParsedPath)}";
         }
+
+        /// <summary>
+        /// Why a case marked <c>skipped</c> is ignored, in the language of the interface of the computer (French or English).
+        /// </summary>
+        public static string SkippedReason =>
+            InFrench ? "Marqué comme ignoré (skipped) dans le fichier Markdown" : "Marked as skipped in the markdown file";
+
+        /// <summary>Why a case is ignored when another case of the file is marked <c>selected</c> (same languages).</summary>
+        public static string NotSelectedReason =>
+            InFrench ? "Un autre cas est marqué selected dans le fichier Markdown" : "Another case is marked selected in the markdown file";
+
+        private static bool InFrench =>
+            string.Equals(CultureInfo.CurrentUICulture.TwoLetterISOLanguageName, "fr", StringComparison.OrdinalIgnoreCase);
+
+        private static object?[] DefaultArguments(MethodInfo testMethod) =>
+            testMethod.GetParameters()
+                      .Select(p => p.ParameterType.IsValueType ? Activator.CreateInstance(p.ParameterType) : null)
+                      .ToArray();
 
         /// <summary>Letters and digits only, in lower case: "Md Extraction-test" and "Md_Extraction_test" are the same title.</summary>
         private static string Normalize(string? text) => new string((text ?? "").Where(char.IsLetterOrDigit).ToArray()).ToLowerInvariant();
