@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
   <Metadata>
-    <Identity Id="MDAT.SourceLinks.5d0b6c1e-3f0a-4a53-9f0e-2c6f6a1b7d11" Version="1.0.0" Language="en-US" Publisher="anisite" />
+    <Identity Id="MDAT.SourceLinks.5d0b6c1e-3f0a-4a53-9f0e-2c6f6a1b7d11" Version="1.1.0" Language="en-US" Publisher="anisite" />
     <DisplayName>mdAT source links</DisplayName>
-    <Description xml:space="preserve">Ctrl+click on the "C#" link that mdAT keeps at the top of a markdown test file to open the C# test on its line. The link is drawn like a link (underlined).</Description>
+    <Description xml:space="preserve">Ctrl+click on the "C#" link that mdAT keeps at the top of a markdown test file to open the C# test on its line (the link is drawn underlined), and F7 to go from a markdown test file to its C# test and back.</Description>
     <MoreInfo>https://github.com/MTESSDev/mdAT</MoreInfo>
     <Tags>markdown, testing, mdat</Tags>
   </Metadata>
