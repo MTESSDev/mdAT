@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591;CS8618</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="TUnit" Version="1.73.19" />
+    <PackageReference Include="Moq" Version="4.18.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MDAT.Core\MDAT.Core.csproj" />
+    <ProjectReference Include="..\MDAT.TUnit\MDAT.TUnit.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Tests\Generated\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- the parts of the Visual Studio extension that have no dependency on Visual Studio -->
+    <Compile Include="..\MDAT.VisualStudio\MdatLinkParser.cs" Link="VisualStudio\MdatLinkParser.cs" />
+    <Compile Include="..\MDAT.VisualStudio\MdatNavigation.cs" Link="VisualStudio\MdatNavigation.cs" />
+  </ItemGroup>
+
+</Project>

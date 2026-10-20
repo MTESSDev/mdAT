@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="MDAT.Core/MDAT.Core.csproj" />
+  <Project Path="MDAT.TUnit/MDAT.TUnit.csproj" />
+  <Project Path="MDAT.Tests/MDAT.Tests.csproj" />
+  <Project Path="MDAT/MDAT.csproj" />
+</Solution>
