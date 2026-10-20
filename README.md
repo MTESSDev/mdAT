@@ -107,6 +107,37 @@ expected:
 
 Avec `mdAT`, les analystes et les développeurs peuvent travailler ensemble avec une source unique de tests, et les mainteneurs peuvent modifier et valider tous les tests localement ou sur un serveur de build.
 
+## Catégories et propriétés des cas
+
+Un cas peut avoir des catégories et des propriétés, celles de TUnit (elles servent à filtrer les tests et à les regrouper dans l'explorateur) :
+
+- **pour un cas** : des paires `nom=valeur` dans la ligne de sa clôture, à côté de `skipped` et `selected` ;
+- **pour tout le fichier** : `tags:` dans l'en-tête YAML du fichier Markdown.
+
+````md
+---
+tags:
+  category: Facturation
+  domaine: Taxes
+---
+# Add
+
+## Cas 1
+
+``````yaml category=Smoke,Rapide priorite=Haute
+a: 1
+b: 2
+expected: 3
+``````
+````
+
+- `category` donne des **catégories** ; tout autre nom (`domaine`, `priorite`) donne une **propriété**.
+- Ici, le cas a les catégories `Facturation`, `Smoke` et `Rapide`, et les propriétés `domaine=Taxes` et `priorite=Haute`.
+- Les catégories du fichier et celles du cas **s'additionnent**. Pour une propriété, celle du cas **remplace** celle du fichier de même nom.
+- Plusieurs catégories se séparent par des virgules. Dans l'en-tête, une liste YAML convient aussi (`env: [dev, test]` donne deux propriétés `env`). Une valeur avec des espaces s'écrit entre guillemets (`category="Très lent"`, `responsable="Équipe facturation"`).
+- Un cas ignoré (`skipped`) garde ses catégories et ses propriétés.
+- Deux cas qui portent exactement le même nom et des propriétés différentes ne reçoivent aucune propriété (ils ne peuvent pas être distingués) : donnez-leur des titres différents.
+
 ## Options d'une étape de vérification
 
 Chaque élément de `verify` accepte :
@@ -159,7 +190,7 @@ mdAT 2.0 abandonne MSTest au profit de TUnit. Les projets qui restent sur MSTest
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="TUnit" Version="1.73.19" />
-    <PackageReference Include="MDAT" Version="2.0.0-beta.5" />
+    <PackageReference Include="MDAT" Version="2.0.0-beta.7" />
   </ItemGroup>
 </Project>
 ```
@@ -396,6 +427,37 @@ expected:
 
 Using `mdAT`, analysts and developers can work together with a unique source of tests, and maintainers can edit and validate all tests locally or on a build server.
 
+## Case categories and properties
+
+A case can have categories and properties, the TUnit ones (they are used to filter the tests and to group them in the test explorer):
+
+- **for one case**: `name=value` pairs in the line of its code fence, next to `skipped` and `selected`;
+- **for the whole file**: `tags:` in the YAML header (front matter) of the markdown file.
+
+````md
+---
+tags:
+  category: Billing
+  area: Taxes
+---
+# Add
+
+## Case 1
+
+``````yaml category=Smoke,Fast priority=High
+a: 1
+b: 2
+expected: 3
+``````
+````
+
+- `category` gives **categories**; any other name (`area`, `priority`) gives a **property**.
+- Here the case has the categories `Billing`, `Smoke` and `Fast`, and the properties `area=Taxes` and `priority=High`.
+- The categories of the file and the ones of the case **add up**. For a property, the one of the case **replaces** the one of the file with the same name.
+- Several categories are separated by commas. In the header, a YAML list works too (`env: [dev, test]` gives two `env` properties). A value with spaces is written between quotes (`category="Very slow"`, `owner="Billing team"`).
+- An ignored case (`skipped`) keeps its categories and properties.
+- Two cases with exactly the same name and different properties get no property (they cannot be told apart): give them different titles.
+
 ## Verification step options
 
 Each `verify` item accepts:
@@ -448,7 +510,7 @@ mdAT 2.0 drops MSTest in favour of TUnit. Projects staying on MSTest can keep us
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="TUnit" Version="1.73.19" />
-    <PackageReference Include="MDAT" Version="2.0.0-beta.5" />
+    <PackageReference Include="MDAT" Version="2.0.0-beta.7" />
   </ItemGroup>
 </Project>
 ```

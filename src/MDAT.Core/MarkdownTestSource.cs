@@ -1,11 +1,13 @@
 ﻿using LoxSmoke.DocXml;
 using Markdig;
+using Markdig.Extensions.Yaml;
 using Markdig.Syntax;
 using MDAT.Resolver;
 using System.ComponentModel;
 using System.Globalization;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using YamlDotNet.Core;
 using YamlDotNet.Serialization;
 
@@ -17,14 +19,29 @@ namespace MDAT
     /// </summary>
     public sealed class MarkdownTestCase
     {
-        public MarkdownTestCase(object?[] arguments, string displayName, string? filePath = null, int line = 0, string? skipReason = null)
+        public MarkdownTestCase(object?[] arguments, string displayName, string? filePath = null, int line = 0, string? skipReason = null,
+                                IReadOnlyList<string>? categories = null, IReadOnlyList<KeyValuePair<string, string>>? properties = null)
         {
             Arguments = arguments;
             DisplayName = displayName;
             FilePath = filePath;
             Line = line;
             SkipReason = skipReason;
+            Categories = categories ?? Array.Empty<string>();
+            Properties = properties ?? Array.Empty<KeyValuePair<string, string>>();
         }
+
+        /// <summary>
+        /// The categories of the case: <c>category=Smoke,Fast</c> in the line of its code block, added to the
+        /// <c>tags: category:</c> of the front matter of the file.
+        /// </summary>
+        public IReadOnlyList<string> Categories { get; }
+
+        /// <summary>
+        /// The other tags of the case, as name and value: <c>priority=High</c> in the line of its code block, or
+        /// <c>tags: priority:</c> in the front matter of the file. A property of the case replaces the one of the file with the same name.
+        /// </summary>
+        public IReadOnlyList<KeyValuePair<string, string>> Properties { get; }
 
         /// <summary>When set, the case is reported as ignored and never run: it was marked <c>skipped</c> in the markdown file.</summary>
         public string? SkipReason { get; }
@@ -92,7 +109,9 @@ namespace MDAT
         {
             var fileData = File.ReadAllText(ParsedPath);
 
-            var mdFile = Markdown.Parse(fileData);
+            // with the front matter extension, the "---" block at the top of the file is not read as a title
+            var mdFile = Markdown.Parse(fileData, MarkdownPipeline);
+            var fileTags = ReadFileTags(mdFile);
 
             string?[] headings = new string?[] { null, null, null, null, null, null };
             int[] headingLines = new int[6];
@@ -123,9 +142,12 @@ namespace MDAT
                                        : anySelected && !HasArgument(fbc, "selected") ? NotSelectedReason
                                        : null;
 
+                    // the tags of the file, then the ones of the case (the case wins for a property of the same name)
+                    var (categories, properties) = MergeTags(fileTags, ReadCaseTags(fbc.Arguments));
+
                     if (ignoredBecause is not null)
                     {
-                        to.Add(new MarkdownTestCase(DefaultArguments(testMethod), DisplayName(testMethod, headings), fullPath, TitleLine(headings, headingLines, fbc.Line + 1), ignoredBecause));
+                        to.Add(new MarkdownTestCase(DefaultArguments(testMethod), DisplayName(testMethod, headings), fullPath, TitleLine(headings, headingLines, fbc.Line + 1), ignoredBecause, categories, properties));
                         continue;
                     }
 
@@ -133,12 +155,117 @@ namespace MDAT
 
                     if (values is null) continue;
 
-                    to.Add(new MarkdownTestCase(values, DisplayName(testMethod, headings), fullPath, TitleLine(headings, headingLines, fbc.Line + 1)));
+                    to.Add(new MarkdownTestCase(values, DisplayName(testMethod, headings), fullPath, TitleLine(headings, headingLines, fbc.Line + 1), null, categories, properties));
                 }
             }
 
             return to;
         }
+
+        private static readonly MarkdownPipeline MarkdownPipeline = new MarkdownPipelineBuilder().UseYamlFrontMatter().Build();
+
+        private const string CategoryTag = "category";
+
+        // name=value or name="a value with spaces", in the line of the code block (after "yaml")
+        private static readonly Regex CaseTagPattern = new(@"(?<name>[A-Za-z_][A-Za-z0-9_.\-]*)=(?:""(?<quoted>[^""]*)""|(?<plain>\S*))", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+
+        /// <summary>
+        /// The <c>tags</c> of the front matter of the file, which apply to all its cases:
+        /// <code>
+        /// ---
+        /// tags:
+        ///   category: Billing, Smoke
+        ///   priority: High
+        /// ---
+        /// </code>
+        /// <c>category</c> (one name, several separated by commas, or a list) gives categories, any other name a property
+        /// (a list gives one property per item). A front matter that cannot be read is left alone: it never stops the cases
+        /// from being read.
+        /// </summary>
+        private static List<KeyValuePair<string, string>> ReadFileTags(MarkdownDocument document)
+        {
+            var tags = new List<KeyValuePair<string, string>>();
+
+            var frontMatter = document.OfType<YamlFrontMatterBlock>().FirstOrDefault();
+
+            if (frontMatter is null)
+            {
+                return tags;
+            }
+
+            try
+            {
+                var root = new DeserializerBuilder().Build().Deserialize<Dictionary<string, object>>(frontMatter.Lines.ToString());
+
+                if (root is not null
+                    && root.FirstOrDefault(entry => string.Equals(entry.Key, "tags", StringComparison.OrdinalIgnoreCase)).Value is IDictionary<object, object> declared)
+                {
+                    foreach (var tag in declared)
+                    {
+                        var name = Convert.ToString(tag.Key, CultureInfo.InvariantCulture) ?? "";
+                        var values = tag.Value is IEnumerable<object> list ? list : new[] { tag.Value };
+
+                        foreach (var value in values)
+                        {
+                            tags.Add(new KeyValuePair<string, string>(name, Convert.ToString(value, CultureInfo.InvariantCulture) ?? ""));
+                        }
+                    }
+                }
+            }
+            catch (YamlException)
+            {
+                // not a YAML we can read: no tag
+            }
+
+            return tags;
+        }
+
+        /// <summary><c>category=Smoke,Fast priority=High</c> in the line of the code block, next to <c>skipped</c> and <c>selected</c>.</summary>
+        private static List<KeyValuePair<string, string>> ReadCaseTags(string? arguments)
+        {
+            var tags = new List<KeyValuePair<string, string>>();
+
+            foreach (Match match in CaseTagPattern.Matches(arguments ?? ""))
+            {
+                var value = match.Groups["quoted"].Success ? match.Groups["quoted"].Value : match.Groups["plain"].Value;
+
+                tags.Add(new KeyValuePair<string, string>(match.Groups["name"].Value, value));
+            }
+
+            return tags;
+        }
+
+        private static (IReadOnlyList<string> Categories, IReadOnlyList<KeyValuePair<string, string>> Properties) MergeTags(
+            List<KeyValuePair<string, string>> fromFile, List<KeyValuePair<string, string>> fromCase)
+        {
+            var categories = new List<string>();
+            var properties = new List<KeyValuePair<string, string>>();
+
+            // a property the case sets replaces the ones of the file with the same name (the categories add up)
+            var setByTheCase = new HashSet<string>(fromCase.Where(t => !IsCategory(t)).Select(t => t.Key), StringComparer.Ordinal);
+
+            foreach (var tag in fromFile.Where(t => IsCategory(t) || !setByTheCase.Contains(t.Key)).Concat(fromCase))
+            {
+                if (IsCategory(tag))
+                {
+                    foreach (var name in (tag.Value ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                    {
+                        if (!categories.Contains(name, StringComparer.Ordinal))
+                        {
+                            categories.Add(name);
+                        }
+                    }
+                }
+                else
+                {
+                    properties.Add(tag);
+                }
+            }
+
+            return (categories, properties);
+        }
+
+        private static bool IsCategory(KeyValuePair<string, string> tag) => string.Equals(tag.Key, CategoryTag, StringComparison.OrdinalIgnoreCase);
 
         private static bool IsCase(FencedCodeBlock block) =>
             block.ClosingFencedCharCount == 6 && (block.Info?.ToLower() == "yaml" || block.Info?.ToLower() == "yml");
