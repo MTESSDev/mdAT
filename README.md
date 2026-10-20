@@ -190,7 +190,7 @@ mdAT 2.0 abandonne MSTest au profit de TUnit. Les projets qui restent sur MSTest
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="TUnit" Version="1.73.19" />
-    <PackageReference Include="MDAT" Version="2.0.0-beta.7" />
+    <PackageReference Include="MDAT" Version="2.0.0" />
   </ItemGroup>
 </Project>
 ```
@@ -510,7 +510,7 @@ mdAT 2.0 drops MSTest in favour of TUnit. Projects staying on MSTest can keep us
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="TUnit" Version="1.73.19" />
-    <PackageReference Include="MDAT" Version="2.0.0-beta.7" />
+    <PackageReference Include="MDAT" Version="2.0.0" />
   </ItemGroup>
 </Project>
 ```
